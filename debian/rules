@@ -1,0 +1,23 @@
+#!/usr/bin/make -f
+export DEB_BUILD_MAINT_OPTIONS = hardening=+all
+
+%:
+    dh $@
+
+override_dh_auto_configure:
+    dh_auto_configure -- \
+        -DCMAKE_INSTALL_PREFIX=/usr \
+        -DCMAKE_INSTALL_SYSCONFDIR=/etc/hiawatha \
+        -DENABLE_TLS=ON \
+        -DENABLE_XSLT=ON \
+        -DWEBROOT_DIR=/var/www/hiawatha \
+        -DWORK_DIR=/var/lib/hiawatha \
+        -DLOG_DIR=/var/log/hiawatha
+
+override_dh_install:
+    dh_install
+    mkdir -p debian/hiawatha/var/log/hiawatha
+    mkdir -p debian/hiawatha/var/lib/hiawatha
+    mkdir -p debian/hiawatha/var/www/hiawatha
+
+override_dh_auto_test:

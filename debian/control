@@ -1,0 +1,12 @@
+Source: hiawatha
+Section: httpd
+Priority: optional
+Maintainer: Chris Wadge <cwadge@tuxhelp.org>
+Build-Depends: debhelper-compat (= 13), cmake, libxml2-dev, libxslt1-dev, zlib1g-dev, libmbedtls-dev
+
+Package: hiawatha
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, libxml2, libxslt1.1, zlib1g
+Description: Advanced and secure webserver
+ Hiawatha is an open source webserver with security, ease of use 
+ and lightweight design as its key features.

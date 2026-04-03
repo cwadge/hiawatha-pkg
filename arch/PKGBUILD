@@ -1,0 +1,29 @@
+# Maintainer: Chris Wadge <cwadge@tuxhelp.org>
+
+pkgname=hiawatha
+pkgver=12.0
+pkgrel=1
+pkgdesc="Advanced and secure webserver"
+arch=('x86_64' 'aarch64')
+url="https://gitlab.com/hsleisink/hiawatha"
+license=('GPL2')
+depends=('libxml2' 'libxslt' 'zlib' 'mbedtls')
+makedepends=('cmake')
+source=("https://gitlab.com/hsleisink/hiawatha/-/archive/v${pkgver}/hiawatha-v${pkgver}.tar.gz")
+sha256sums=('SKIP')
+
+build() {
+  cmake -B build -S "hiawatha-v${pkgver}" \
+    -DCMAKE_INSTALL_PREFIX=/usr \
+    -DCMAKE_INSTALL_SYSCONFDIR=/etc/hiawatha \
+    -DENABLE_TLS=ON \
+    -DENABLE_XSLT=ON \
+    -DWEBROOT_DIR=/var/www/hiawatha \
+    -DWORK_DIR=/var/lib/hiawatha \
+    -DLOG_DIR=/var/log/hiawatha
+  make -C build
+}
+
+package() {
+  make -C build DESTDIR="${pkgdir}" install
+}

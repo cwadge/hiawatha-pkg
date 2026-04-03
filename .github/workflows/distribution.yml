@@ -1,0 +1,114 @@
+name: Hiawatha Distribution Hub
+
+on:
+  schedule: [{cron: '0 2 * * *'}] # 2:00 AM UTC Daily
+  workflow_dispatch:
+
+jobs:
+  check-version:
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.sync.outputs.tag }}
+      build_needed: ${{ steps.sync.outputs.build_needed }}
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - id: sync
+        run: |
+          LATEST=$(curl -s "https://gitlab.com/api/v4/projects/hsleisink%2Fhiawatha/repository/tags" | jq -r '.[0].name' | sed 's/^v//')
+          if git ls-remote --tags origin | grep -q "refs/tags/v$LATEST"; then
+            echo "Version v$LATEST is already built."
+            echo "build_needed=false" >> $GITHUB_OUTPUT
+          else
+            echo "New version v$LATEST found! Initiating build sequence."
+            echo "build_needed=true" >> $GITHUB_OUTPUT
+            echo "tag=$LATEST" >> $GITHUB_OUTPUT
+          fi
+
+  build-debs:
+    needs: check-version
+    if: needs.check-version.outputs.build_needed == 'true'
+    strategy:
+      matrix:
+        # Debian Stable (trixie/debian:13) is built first and foremost.
+        # Debian Old Stable (bookworm/debian:12) + all current Ubuntu LTS
+        # releases are included for widest reasonable compatibility.
+        # Hiawatha’s minimal dependencies make multi-distro builds safe and reliable.
+        distro: ["debian:13", "debian:12", "ubuntu:22.04", "ubuntu:24.04", "ubuntu:26.04"]
+        arch: [amd64, arm64]
+    runs-on: ${{ matrix.arch == 'arm64' && 'ubuntu-24.04-arm' || 'ubuntu-latest' }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Update Version in Changelog
+        run: |
+          sed -i "s/hiawatha (.*)/hiawatha (${{ needs.check-version.outputs.tag }}-1)/" debian/changelog
+      - name: Build
+        run: |
+          docker run --rm -v ${{ github.workspace }}:/work ${{ matrix.distro }} \
+          bash -c "apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y build-essential cmake debhelper devscripts libxml2-dev libxslt1-dev zlib1g-dev libmbedtls-dev && cd /work && dpkg-buildpackage -us -uc -b"
+      - uses: actions/upload-artifact@v4
+        with: { name: deb-${{ matrix.distro }}-${{ matrix.arch }}, path: ./*.deb }
+
+  publish:
+    needs: [check-version, build-debs]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pages: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download New Artifacts
+        uses: actions/download-artifact@v4
+        with: { path: new-debs, merge-multiple: true }
+      
+      - name: Checkout gh-pages branch
+        uses: actions/checkout@v4
+        continue-on-error: true
+        with:
+          ref: gh-pages
+          path: gh-pages-branch
+
+      - name: Run Janitor
+        run: python3 .github/scripts/janitor.py
+
+      - name: Update PKGBUILD for new version + valid checksums
+        run: |
+          TAG=${{ needs.check-version.outputs.tag }}
+          echo "Updating PKGBUILD to v${TAG}"
+
+          sed -i "s/^pkgver=.*/pkgver=${TAG}/" arch/PKGBUILD
+          sed -i "s/^pkgrel=.*/pkgrel=1/" arch/PKGBUILD
+
+          curl -L --fail -o hiawatha.tar.gz \
+            "https://gitlab.com/hsleisink/hiawatha/-/archive/v${TAG}/hiawatha-v${TAG}.tar.gz"
+          SHA=$(sha256sum hiawatha.tar.gz | cut -d' ' -f1)
+          sed -i "s|^sha256sums=.*|sha256sums=('${SHA}')|" arch/PKGBUILD
+          rm hiawatha.tar.gz
+
+          cat arch/PKGBUILD
+
+      - name: Publish to APT
+        uses: MauroDruwel/apt-repo-action@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          repo_supported_version: "trixie bookworm jammy noble resolute"
+          repo_supported_arch: "amd64 arm64"
+          private_key: ${{ secrets.GPG_PRIVATE_KEY }}
+          public_key: ${{ secrets.GPG_PUBLIC_KEY }}
+          file: "new-debs/*.deb"
+
+      - name: Push to AUR
+        uses: KSXGitHub/github-actions-deploy-aur@v3
+        with:
+          pkgname: hiawatha
+          pkgbuild: ./arch/PKGBUILD
+          commit_username: "GitHub Actions Bot"
+          commit_email: "actions@github.com"
+          ssh_private_key: ${{ secrets.AUR_SSH_PRIVATE_KEY }}
+          commit_message: "Update to v${{ needs.check-version.outputs.tag }}"
+          force_push: true
+
+      - name: Tag Repository
+        run: |
+          git tag v${{ needs.check-version.outputs.tag }}
+          git push origin v${{ needs.check-version.outputs.tag }}

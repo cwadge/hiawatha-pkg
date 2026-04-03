@@ -55,6 +55,9 @@ jobs:
           sed -i "s/hiawatha (.*)/hiawatha (${{ needs.check-version.outputs.tag }}-1)/" debian/changelog
       - name: Build
         run: |
+          # dpkg-buildpackage places output one level above the source tree.
+          # Inside the container that's / (not host-accessible), so we copy
+          # the finished debs back into /work (the mounted workspace) before exit.
           docker run --rm -v ${{ github.workspace }}:/work ${{ matrix.distro }} bash -c "
             set -e
             apt-get update -qq
@@ -63,6 +66,7 @@ jobs:
               libxml2-dev libxslt1-dev zlib1g-dev libmbedtls-dev
             cd /work
             dpkg-buildpackage -us -uc -b
+            cp /*.deb /work/
           "
       - name: Stage deb under codename directory
         run: |
@@ -76,7 +80,7 @@ jobs:
             *) echo "Unknown distro: ${{ matrix.distro }}" >&2 && exit 1 ;;
           esac
           mkdir -p staging/$CODENAME
-          mv ../*.deb staging/$CODENAME/
+          mv ./*.deb staging/$CODENAME/
           echo "CODENAME=$CODENAME" >> $GITHUB_ENV
       - uses: actions/upload-artifact@v4
         with:

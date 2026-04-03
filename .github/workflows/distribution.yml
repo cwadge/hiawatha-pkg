@@ -11,7 +11,7 @@ jobs:
       tag: ${{ steps.sync.outputs.tag }}
       build_needed: ${{ steps.sync.outputs.build_needed }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
       - id: sync
@@ -39,7 +39,7 @@ jobs:
         arch: [amd64, arm64]
     runs-on: ${{ matrix.arch == 'arm64' && 'ubuntu-24.04-arm' || 'ubuntu-latest' }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Update Version in Changelog
         run: |
           sed -i "s/hiawatha (.*)/hiawatha (${{ needs.check-version.outputs.tag }}-1)/" debian/changelog
@@ -59,7 +59,7 @@ jobs:
       contents: write
       pages: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Download New Artifacts
         uses: actions/download-artifact@v4
         with:
@@ -67,7 +67,7 @@ jobs:
           merge-multiple: true
       
       - name: Checkout gh-pages branch
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         continue-on-error: true
         with:
           ref: gh-pages

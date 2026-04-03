@@ -50,9 +50,22 @@ jobs:
     runs-on: ${{ matrix.arch == 'arm64' && 'ubuntu-24.04-arm' || 'ubuntu-latest' }}
     steps:
       - uses: actions/checkout@v6
-      - name: Update version in changelog
+      - name: Derive codename and update changelog
         run: |
-          sed -i "s/hiawatha (.*)/hiawatha (${{ needs.check-version.outputs.tag }}-1)/" debian/changelog
+          # Derive codename early so it's available to all subsequent steps.
+          case "${{ matrix.distro }}" in
+            debian:13)    CODENAME=trixie   ;;
+            debian:12)    CODENAME=bookworm ;;
+            ubuntu:22.04) CODENAME=jammy    ;;
+            ubuntu:24.04) CODENAME=noble    ;;
+            *) echo "Unknown distro: ${{ matrix.distro }}" >&2 && exit 1 ;;
+          esac
+          echo "CODENAME=$CODENAME" >> $GITHUB_ENV
+          # Update both version AND distribution on the first changelog entry.
+          # apt-repo-action reads the distribution from the deb's embedded
+          # changelog (/usr/share/doc/hiawatha/changelog.Debian.gz) and validates
+          # it against repo_supported_version — "unstable" would always fail.
+          sed -i "1s/hiawatha ([^)]*)) [a-z][a-z-]*/hiawatha (${{ needs.check-version.outputs.tag }}-1)) $CODENAME/" debian/changelog
       - name: Build
         run: |
           # dpkg-buildpackage places output one level above the source tree.
@@ -70,22 +83,12 @@ jobs:
           "
       - name: Stage deb under codename directory
         run: |
-          # Derive codename from matrix distro value for apt-repo-action's
-          # file_target_version, which requires an unambiguous per-codename input.
-          case "${{ matrix.distro }}" in
-            debian:13)    CODENAME=trixie   ;;
-            debian:12)    CODENAME=bookworm ;;
-            ubuntu:22.04) CODENAME=jammy    ;;
-            ubuntu:24.04) CODENAME=noble    ;;
-            *) echo "Unknown distro: ${{ matrix.distro }}" >&2 && exit 1 ;;
-          esac
-          mkdir -p staging/$CODENAME
-          mv ./*.deb staging/$CODENAME/
-          echo "CODENAME=$CODENAME" >> $GITHUB_ENV
+          # Colons are illegal in artifact names, so distro string is not used directly.
+          mkdir -p staging/${{ env.CODENAME }}
+          mv ./*.deb staging/${{ env.CODENAME }}/
       - uses: actions/upload-artifact@v4
         with:
           # Codename in artifact name lets publish-apt download by codename glob.
-          # Colons are illegal in artifact names, so distro string is not used directly.
           name: deb-${{ env.CODENAME }}-${{ matrix.arch }}
           path: staging/${{ env.CODENAME }}/
 

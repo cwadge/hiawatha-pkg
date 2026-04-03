@@ -12,7 +12,8 @@ jobs:
       build_needed: ${{ steps.sync.outputs.build_needed }}
     steps:
       - uses: actions/checkout@v4
-        with: { fetch-depth: 0 }
+        with:
+          fetch-depth: 0
       - id: sync
         run: |
           LATEST=$(curl -s "https://gitlab.com/api/v4/projects/hsleisink%2Fhiawatha/repository/tags" | jq -r '.[0].name' | sed 's/^v//')
@@ -47,7 +48,9 @@ jobs:
           docker run --rm -v ${{ github.workspace }}:/work ${{ matrix.distro }} \
           bash -c "apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y build-essential cmake debhelper devscripts libxml2-dev libxslt1-dev zlib1g-dev libmbedtls-dev && cd /work && dpkg-buildpackage -us -uc -b"
       - uses: actions/upload-artifact@v4
-        with: { name: deb-${{ matrix.distro }}-${{ matrix.arch }}, path: ./*.deb }
+        with:
+          name: deb-${{ matrix.distro }}-${{ matrix.arch }}
+          path: ./*.deb
 
   publish:
     needs: [check-version, build-debs]
@@ -59,7 +62,9 @@ jobs:
       - uses: actions/checkout@v4
       - name: Download New Artifacts
         uses: actions/download-artifact@v4
-        with: { path: new-debs, merge-multiple: true }
+        with:
+          path: new-debs
+          merge-multiple: true
       
       - name: Checkout gh-pages branch
         uses: actions/checkout@v4

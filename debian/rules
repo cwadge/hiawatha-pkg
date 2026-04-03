@@ -14,10 +14,4 @@ override_dh_auto_configure:
 		-DWORK_DIR=/var/lib/hiawatha \
 		-DLOG_DIR=/var/log/hiawatha
 
-override_dh_install:
-	dh_install
-	mkdir -p debian/hiawatha/var/log/hiawatha
-	mkdir -p debian/hiawatha/var/lib/hiawatha
-	mkdir -p debian/hiawatha/var/www/hiawatha
-
 override_dh_auto_test:

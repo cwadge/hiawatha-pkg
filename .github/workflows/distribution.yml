@@ -61,11 +61,13 @@ jobs:
             *) echo "Unknown distro: ${{ matrix.distro }}" >&2 && exit 1 ;;
           esac
           echo "CODENAME=$CODENAME" >> $GITHUB_ENV
-          # Update both version AND distribution on the first changelog entry.
-          # apt-repo-action reads the distribution from the deb's embedded
-          # changelog (/usr/share/doc/hiawatha/changelog.Debian.gz) and validates
-          # it against repo_supported_version — "unstable" would always fail.
-          sed -i "1s/hiawatha ([^)]*) [a-z][a-z-]*/hiawatha (${{ needs.check-version.outputs.tag }}-1) $CODENAME/" debian/changelog
+          # Swap the distribution word on the first changelog line.
+          # apt-repo-action reads this from the deb's embedded
+          # changelog (/usr/share/doc/hiawatha/changelog.Debian.gz)
+          # and validates it against repo_supported_version.
+          sed -i "1s/unstable/$CODENAME/" debian/changelog
+          echo "--- changelog line 1 after sed ---"
+          head -1 debian/changelog
       - name: Build
         run: |
           # dpkg-buildpackage places output one level above the source tree.
@@ -79,8 +81,15 @@ jobs:
               libxml2-dev libxslt1-dev zlib1g-dev libmbedtls-dev
             cd /work
             dpkg-buildpackage -us -uc -b
+            echo '--- debs produced ---'
+            ls -lh /*.deb
             cp /*.deb /work/
           "
+      - name: Verify debs landed in workspace
+        run: |
+          echo "--- workspace debs ---"
+          ls -lh ./*.deb || { echo "ERROR: no .deb files in workspace"; exit 1; }
+          dpkg-deb --info ./*.deb | grep -E 'Package|Version|Architecture'
       - name: Stage deb under codename directory
         run: |
           # Colons are illegal in artifact names, so distro string is not used directly.
@@ -123,6 +132,7 @@ jobs:
           public_key: ${{ secrets.GPG_PUBLIC_KEY }}
           file: "debs/*.deb"
           file_target_version: ${{ matrix.codename }} # unambiguous per-leg target
+          debug: true
 
   finalize:
     needs: [check-version, publish-apt]

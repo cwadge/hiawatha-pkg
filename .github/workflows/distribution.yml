@@ -138,6 +138,7 @@ jobs:
           public_key: ${{ secrets.GPG_PUBLIC_KEY }}
           file: "debs/*.deb"
           file_target_version: ${{ matrix.codename }} # unambiguous per-leg target
+          target_repository: ${{ github.repository }}
           debug: true
 
   finalize:

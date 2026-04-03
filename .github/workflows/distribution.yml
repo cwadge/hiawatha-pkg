@@ -65,7 +65,7 @@ jobs:
           # apt-repo-action reads the distribution from the deb's embedded
           # changelog (/usr/share/doc/hiawatha/changelog.Debian.gz) and validates
           # it against repo_supported_version — "unstable" would always fail.
-          sed -i "1s/hiawatha ([^)]*)) [a-z][a-z-]*/hiawatha (${{ needs.check-version.outputs.tag }}-1)) $CODENAME/" debian/changelog
+          sed -i "1s/hiawatha ([^)]*) [a-z][a-z-]*/hiawatha (${{ needs.check-version.outputs.tag }}-1) $CODENAME/" debian/changelog
       - name: Build
         run: |
           # dpkg-buildpackage places output one level above the source tree.

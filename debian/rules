@@ -13,8 +13,3 @@ override_dh_auto_configure:
 		-DWEBROOT_DIR=/var/www/hiawatha \
 		-DWORK_DIR=/var/lib/hiawatha \
 		-DLOG_DIR=/var/log/hiawatha
-
-override_dh_install:
-	dh_install --sourcedir=debian/tmp
-
-override_dh_auto_test:

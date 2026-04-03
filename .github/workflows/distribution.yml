@@ -1,7 +1,7 @@
 name: Hiawatha Distribution Hub
 
 on:
-  schedule: [{cron: '0 2 * * *'}] # 2:00 AM UTC Daily
+  schedule: [{cron: '0 2 * * *'}]
   workflow_dispatch:
 
 jobs:
@@ -16,12 +16,18 @@ jobs:
           fetch-depth: 0
       - id: sync
         run: |
-          LATEST=$(curl -s "https://gitlab.com/api/v4/projects/hsleisink%2Fhiawatha/repository/tags" | jq -r '.[0].name' | sed 's/^v//')
+          # Adjust project path if upstream namespace differs
+          LATEST=$(curl -s "https://gitlab.com/api/v4/projects/hsleisink%2Fhiawatha/repository/tags" \
+            | jq -r '.[0].name' | sed 's/^v//')
+          if [ -z "$LATEST" ] || [ "$LATEST" = "null" ]; then
+            echo "ERROR: Could not fetch latest tag from GitLab" >&2
+            exit 1
+          fi
           if git ls-remote --tags origin | grep -q "refs/tags/v$LATEST"; then
-            echo "Version v$LATEST is already built."
+            echo "Version v$LATEST already built."
             echo "build_needed=false" >> $GITHUB_OUTPUT
           else
-            echo "New version v$LATEST found! Initiating build sequence."
+            echo "New version v$LATEST found."
             echo "build_needed=true" >> $GITHUB_OUTPUT
             echo "tag=$LATEST" >> $GITHUB_OUTPUT
           fi
@@ -30,77 +36,82 @@ jobs:
     needs: check-version
     if: needs.check-version.outputs.build_needed == 'true'
     strategy:
+      fail-fast: false   # don't cancel other matrix legs if one distro fails
       matrix:
-        # Debian Stable (trixie/debian:13) is built first and foremost.
-        # Debian Old Stable (bookworm/debian:12) + all current Ubuntu LTS
-        # releases are included for widest reasonable compatibility.
-        # Hiawatha’s minimal dependencies make multi-distro builds safe and reliable.
-        distro: ["debian:13", "debian:12", "ubuntu:22.04", "ubuntu:24.04", "ubuntu:26.04"]
+        # Debian stable (trixie) first, then oldstable + current Ubuntu LTS.
+        # ubuntu:26.04 omitted until it stabilises in Docker Hub.
+        distro: ["debian:13", "debian:12", "ubuntu:22.04", "ubuntu:24.04"]
         arch: [amd64, arm64]
     runs-on: ${{ matrix.arch == 'arm64' && 'ubuntu-24.04-arm' || 'ubuntu-latest' }}
     steps:
       - uses: actions/checkout@v6
-      - name: Update Version in Changelog
+      - name: Update version in changelog
         run: |
           sed -i "s/hiawatha (.*)/hiawatha (${{ needs.check-version.outputs.tag }}-1)/" debian/changelog
-      - name: Build
+      - name: Build package
         run: |
-          docker run --rm -v ${{ github.workspace }}:/work ${{ matrix.distro }} \
-          bash -c "apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y build-essential cmake debhelper devscripts libxml2-dev libxslt1-dev zlib1g-dev libmbedtls-dev && cd /work && dpkg-buildpackage -us -uc -b"
+          docker run --rm -v ${{ github.workspace }}:/work ${{ matrix.distro }} bash -c "
+            set -e
+            apt-get update -qq
+            DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+              build-essential cmake debhelper devscripts \
+              libxml2-dev libxslt1-dev zlib1g-dev libmbedtls-dev
+            cd /work
+            dpkg-buildpackage -us -uc -b
+          "
+      - name: Sanitise artifact name
+        # colons are not allowed in artifact names
+        id: safe
+        run: echo "name=deb-$(echo '${{ matrix.distro }}' | tr ':' '-')-${{ matrix.arch }}" >> $GITHUB_OUTPUT
       - uses: actions/upload-artifact@v4
         with:
-          name: deb-${{ matrix.distro }}-${{ matrix.arch }}
+          name: ${{ steps.safe.outputs.name }}
           path: ./*.deb
 
   publish:
     needs: [check-version, build-debs]
+    if: needs.check-version.outputs.build_needed == 'true'  # was missing — caused failures on no-op runs
     runs-on: ubuntu-latest
     permissions:
       contents: write
       pages: write
     steps:
       - uses: actions/checkout@v6
-      - name: Download New Artifacts
+        with:
+          fetch-depth: 0
+
+      - name: Download built debs
         uses: actions/download-artifact@v4
         with:
           path: new-debs
           merge-multiple: true
-      
-      - name: Checkout gh-pages branch
-        uses: actions/checkout@v6
-        continue-on-error: true
-        with:
-          ref: gh-pages
-          path: gh-pages-branch
 
-      - name: Run Janitor
-        run: python3 .github/scripts/janitor.py
-
-      - name: Update PKGBUILD for new version + valid checksums
+      - name: Update PKGBUILD version and checksum
         run: |
           TAG=${{ needs.check-version.outputs.tag }}
-          echo "Updating PKGBUILD to v${TAG}"
-
           sed -i "s/^pkgver=.*/pkgver=${TAG}/" arch/PKGBUILD
           sed -i "s/^pkgrel=.*/pkgrel=1/" arch/PKGBUILD
-
           curl -L --fail -o hiawatha.tar.gz \
             "https://gitlab.com/hsleisink/hiawatha/-/archive/v${TAG}/hiawatha-v${TAG}.tar.gz"
           SHA=$(sha256sum hiawatha.tar.gz | cut -d' ' -f1)
           sed -i "s|^sha256sums=.*|sha256sums=('${SHA}')|" arch/PKGBUILD
           rm hiawatha.tar.gz
-
+          echo "Updated PKGBUILD:"
           cat arch/PKGBUILD
 
-      - name: Publish to APT
+      - name: Publish to APT repo (signs + deploys to gh-pages)
         uses: MauroDruwel/apt-repo-action@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          repo_supported_version: "trixie bookworm jammy noble resolute"
+          repo_supported_version: "trixie bookworm jammy noble"
           repo_supported_arch: "amd64 arm64"
           private_key: ${{ secrets.GPG_PRIVATE_KEY }}
           public_key: ${{ secrets.GPG_PUBLIC_KEY }}
           file: "new-debs/*.deb"
+
+      - name: Prune old versions from pool
+        # Runs after apt-repo-action so the pool directory exists on gh-pages
+        run: python3 .github/scripts/janitor.py
 
       - name: Push to AUR
         uses: KSXGitHub/github-actions-deploy-aur@v3
@@ -113,7 +124,9 @@ jobs:
           commit_message: "Update to v${{ needs.check-version.outputs.tag }}"
           force_push: true
 
-      - name: Tag Repository
+      - name: Tag release
         run: |
+          git config user.name "GitHub Actions Bot"
+          git config user.email "actions@github.com"
           git tag v${{ needs.check-version.outputs.tag }}
           git push origin v${{ needs.check-version.outputs.tag }}

@@ -1,8 +1,11 @@
 name: Hiawatha Distribution Hub
 
 on:
-  schedule: [{cron: '0 2 * * *'}]
+  schedule: [{cron: '0 2 * * *'}] # 2:00 AM UTC Daily
   workflow_dispatch:
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true # opt in before forced rollout June 2026
 
 jobs:
   check-version:
@@ -16,7 +19,6 @@ jobs:
           fetch-depth: 0
       - id: sync
         run: |
-          # Adjust project path if upstream namespace differs
           LATEST=$(curl -s "https://gitlab.com/api/v4/projects/hsleisink%2Fhiawatha/repository/tags" \
             | jq -r '.[0].name' | sed 's/^v//')
           if [ -z "$LATEST" ] || [ "$LATEST" = "null" ]; then
@@ -24,10 +26,10 @@ jobs:
             exit 1
           fi
           if git ls-remote --tags origin | grep -q "refs/tags/v$LATEST"; then
-            echo "Version v$LATEST already built."
+            echo "Version v$LATEST is already built."
             echo "build_needed=false" >> $GITHUB_OUTPUT
           else
-            echo "New version v$LATEST found."
+            echo "New version v$LATEST found! Initiating build sequence."
             echo "build_needed=true" >> $GITHUB_OUTPUT
             echo "tag=$LATEST" >> $GITHUB_OUTPUT
           fi
@@ -36,10 +38,13 @@ jobs:
     needs: check-version
     if: needs.check-version.outputs.build_needed == 'true'
     strategy:
-      fail-fast: false   # don't cancel other matrix legs if one distro fails
+      fail-fast: false # don't cancel other matrix legs if one distro fails
       matrix:
-        # Debian stable (trixie) first, then oldstable + current Ubuntu LTS.
-        # ubuntu:26.04 omitted until it stabilises in Docker Hub.
+        # Debian Stable (trixie/debian:13) is built first and foremost.
+        # Debian Old Stable (bookworm/debian:12) + all current Ubuntu LTS
+        # releases are included for widest reasonable compatibility.
+        # Hiawatha's minimal dependencies make multi-distro builds safe and reliable.
+        # ubuntu:26.04 omitted until the image stabilises in Docker Hub.
         distro: ["debian:13", "debian:12", "ubuntu:22.04", "ubuntu:24.04"]
         arch: [amd64, arm64]
     runs-on: ${{ matrix.arch == 'arm64' && 'ubuntu-24.04-arm' || 'ubuntu-latest' }}
@@ -48,7 +53,7 @@ jobs:
       - name: Update version in changelog
         run: |
           sed -i "s/hiawatha (.*)/hiawatha (${{ needs.check-version.outputs.tag }}-1)/" debian/changelog
-      - name: Build package
+      - name: Build
         run: |
           docker run --rm -v ${{ github.workspace }}:/work ${{ matrix.distro }} bash -c "
             set -e
@@ -59,47 +64,49 @@ jobs:
             cd /work
             dpkg-buildpackage -us -uc -b
           "
-      - name: Sanitise artifact name
-        # colons are not allowed in artifact names
-        id: safe
-        run: echo "name=deb-$(echo '${{ matrix.distro }}' | tr ':' '-')-${{ matrix.arch }}" >> $GITHUB_OUTPUT
+      - name: Stage deb under codename directory
+        run: |
+          # Derive codename from matrix distro value for apt-repo-action's
+          # file_target_version, which requires an unambiguous per-codename input.
+          case "${{ matrix.distro }}" in
+            debian:13)    CODENAME=trixie   ;;
+            debian:12)    CODENAME=bookworm ;;
+            ubuntu:22.04) CODENAME=jammy    ;;
+            ubuntu:24.04) CODENAME=noble    ;;
+            *) echo "Unknown distro: ${{ matrix.distro }}" >&2 && exit 1 ;;
+          esac
+          mkdir -p staging/$CODENAME
+          mv ../*.deb staging/$CODENAME/
+          echo "CODENAME=$CODENAME" >> $GITHUB_ENV
       - uses: actions/upload-artifact@v4
         with:
-          name: ${{ steps.safe.outputs.name }}
-          path: ./*.deb
+          # Codename in artifact name lets publish-apt download by codename glob.
+          # Colons are illegal in artifact names, so distro string is not used directly.
+          name: deb-${{ env.CODENAME }}-${{ matrix.arch }}
+          path: staging/${{ env.CODENAME }}/
 
-  publish:
+  publish-apt:
     needs: [check-version, build-debs]
-    if: needs.check-version.outputs.build_needed == 'true'  # was missing — caused failures on no-op runs
+    if: needs.check-version.outputs.build_needed == 'true'
+    strategy:
+      fail-fast: false
+      matrix:
+        # Must stay in sync with the distro→codename mapping in build-debs above.
+        codename: [trixie, bookworm, jammy, noble]
     runs-on: ubuntu-latest
     permissions:
       contents: write
       pages: write
     steps:
       - uses: actions/checkout@v6
-        with:
-          fetch-depth: 0
-
-      - name: Download built debs
+      - name: Download debs for ${{ matrix.codename }}
         uses: actions/download-artifact@v4
         with:
-          path: new-debs
+          path: debs
+          # Glob picks up both amd64 and arm64 legs for this codename.
+          pattern: deb-${{ matrix.codename }}-*
           merge-multiple: true
-
-      - name: Update PKGBUILD version and checksum
-        run: |
-          TAG=${{ needs.check-version.outputs.tag }}
-          sed -i "s/^pkgver=.*/pkgver=${TAG}/" arch/PKGBUILD
-          sed -i "s/^pkgrel=.*/pkgrel=1/" arch/PKGBUILD
-          curl -L --fail -o hiawatha.tar.gz \
-            "https://gitlab.com/hsleisink/hiawatha/-/archive/v${TAG}/hiawatha-v${TAG}.tar.gz"
-          SHA=$(sha256sum hiawatha.tar.gz | cut -d' ' -f1)
-          sed -i "s|^sha256sums=.*|sha256sums=('${SHA}')|" arch/PKGBUILD
-          rm hiawatha.tar.gz
-          echo "Updated PKGBUILD:"
-          cat arch/PKGBUILD
-
-      - name: Publish to APT repo (signs + deploys to gh-pages)
+      - name: Publish ${{ matrix.codename }} packages to APT repo
         uses: MauroDruwel/apt-repo-action@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
@@ -107,12 +114,31 @@ jobs:
           repo_supported_arch: "amd64 arm64"
           private_key: ${{ secrets.GPG_PRIVATE_KEY }}
           public_key: ${{ secrets.GPG_PUBLIC_KEY }}
-          file: "new-debs/*.deb"
+          file: "debs/*.deb"
+          file_target_version: ${{ matrix.codename }} # unambiguous per-leg target
 
-      - name: Prune old versions from pool
-        # Runs after apt-repo-action so the pool directory exists on gh-pages
-        run: python3 .github/scripts/janitor.py
-
+  finalize:
+    needs: [check-version, publish-apt]
+    if: needs.check-version.outputs.build_needed == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - name: Update PKGBUILD for new version + valid checksums
+        run: |
+          TAG=${{ needs.check-version.outputs.tag }}
+          echo "Updating PKGBUILD to v${TAG}"
+          sed -i "s/^pkgver=.*/pkgver=${TAG}/" arch/PKGBUILD
+          sed -i "s/^pkgrel=.*/pkgrel=1/" arch/PKGBUILD
+          curl -L --fail -o hiawatha.tar.gz \
+            "https://gitlab.com/hsleisink/hiawatha/-/archive/v${TAG}/hiawatha-v${TAG}.tar.gz"
+          SHA=$(sha256sum hiawatha.tar.gz | cut -d' ' -f1)
+          sed -i "s|^sha256sums=.*|sha256sums=('${SHA}')|" arch/PKGBUILD
+          rm hiawatha.tar.gz
+          cat arch/PKGBUILD
       - name: Push to AUR
         uses: KSXGitHub/github-actions-deploy-aur@v3
         with:
@@ -123,9 +149,9 @@ jobs:
           ssh_private_key: ${{ secrets.AUR_SSH_PRIVATE_KEY }}
           commit_message: "Update to v${{ needs.check-version.outputs.tag }}"
           force_push: true
-
-      - name: Tag release
+      - name: Prune old versions, tag release
         run: |
+          python3 .github/scripts/janitor.py
           git config user.name "GitHub Actions Bot"
           git config user.email "actions@github.com"
           git tag v${{ needs.check-version.outputs.tag }}

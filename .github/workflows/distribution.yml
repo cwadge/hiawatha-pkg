@@ -126,8 +126,14 @@ jobs:
         uses: MauroDruwel/apt-repo-action@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          repo_supported_version: "trixie bookworm jammy noble"
-          repo_supported_arch: "amd64 arm64"
+          repo_supported_version: |
+            trixie
+            bookworm
+            jammy
+            noble
+          repo_supported_arch: |
+            amd64
+            arm64
           private_key: ${{ secrets.GPG_PRIVATE_KEY }}
           public_key: ${{ secrets.GPG_PUBLIC_KEY }}
           file: "debs/*.deb"

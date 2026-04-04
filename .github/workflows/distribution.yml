@@ -61,11 +61,14 @@ jobs:
             *) echo "Unknown distro: ${{ matrix.distro }}" >&2 && exit 1 ;;
           esac
           echo "CODENAME=$CODENAME" >> $GITHUB_ENV
-          # Swap the distribution word on the first changelog line.
+          # Swap the distribution field on the first changelog line.
+          # Match the full dpkg changelog header pattern so a stale codename
+          # from a previous run can't silently corrupt the substitution the
+          # way a bare `s/unstable/…` would (e.g. "trixieixie").
           # apt-repo-action reads this from the deb's embedded
           # changelog (/usr/share/doc/hiawatha/changelog.Debian.gz)
           # and validates it against repo_supported_version.
-          sed -i "1s/unstable/$CODENAME/" debian/changelog
+          sed -i "1s/) [a-z-]*;/) $CODENAME;/" debian/changelog
           echo "--- changelog line 1 after sed ---"
           head -1 debian/changelog
       - name: Fetch Hiawatha upstream source
@@ -77,7 +80,8 @@ jobs:
           # GitLab archive API 404s without auth; use git clone instead.
           # All upstream tags are v-prefixed (e.g. v12.0); check-version strips
           # the v when setting the tag output, so we add it back here.
-          git clone --depth=1 --branch "v${TAG}"               https://gitlab.com/hsleisink/hiawatha.git /tmp/hiawatha-src
+          git clone --depth=1 --branch "v${TAG}" \
+            https://gitlab.com/hsleisink/hiawatha.git /tmp/hiawatha-src
           # Merge upstream source into workspace without overwriting our debian/ packaging.
           rsync -a --exclude='.git' --exclude='debian' /tmp/hiawatha-src/ ./
           echo "--- workspace after source extraction ---"
@@ -103,14 +107,24 @@ jobs:
         run: |
           echo "--- workspace debs ---"
           ls -lh ./*.deb || { echo "ERROR: no .deb files in workspace"; exit 1; }
-          dpkg-deb --info ./*.deb | grep -E 'Package|Version|Architecture|Installed-Size'
+          # Loop over each deb individually; passing a glob to dpkg-deb --info
+          # causes it to treat subsequent filenames as control component names
+          # rather than additional packages, producing a spurious error.
+          for deb in ./*.deb; do
+            dpkg-deb --info "$deb" | grep -E 'Package|Version|Architecture|Installed-Size'
+          done
           echo '--- deb contents ---'
-          dpkg-deb --contents ./*.deb
+          for deb in ./*.deb; do
+            dpkg-deb --contents "$deb"
+          done
       - name: Stage deb under codename directory
         run: |
           # Colons are illegal in artifact names, so distro string is not used directly.
           mkdir -p staging/${{ env.CODENAME }}
-          mv ./*.deb staging/${{ env.CODENAME }}/
+          # Stage only the main package; the dbgsym deb is excluded intentionally.
+          # Including it would cause Resolve deb paths in publish-apt to produce a
+          # multi-path string for a single arch, which apt-repo-action cannot handle.
+          mv ./hiawatha_*.deb staging/${{ env.CODENAME }}/
       - uses: actions/upload-artifact@v4
         with:
           # Codename in artifact name lets publish-apt download by codename glob.

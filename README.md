@@ -31,8 +31,6 @@ sudo apt update && sudo apt install hiawatha
 
 The service is enabled and started automatically on installation.
 
-**Supported codenames:** `trixie` · `bookworm` · `noble` · `jammy`
-
 ## Supported Platforms
 
 | Distribution       | Codename | Architecture |

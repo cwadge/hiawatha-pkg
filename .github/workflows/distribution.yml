@@ -324,7 +324,19 @@ jobs:
           git checkout main
       - name: Prune old versions, tag release
         run: |
+          # Expose the gh-pages branch at the path janitor.py expects without
+          # disturbing the main-branch working tree. The previous step already
+          # fetched gh-pages and switched back to main, so the local branch exists.
+          git worktree add gh-pages-branch gh-pages
           python3 .github/scripts/janitor.py
+          # Push any eviction commit janitor made. If HEAD advanced past
+          # origin/gh-pages the janitor deleted something; otherwise skip.
+          if [ "$(git -C gh-pages-branch rev-parse HEAD)" \
+             != "$(git rev-parse origin/gh-pages)" ]; then
+            git -C gh-pages-branch push origin gh-pages
+          fi
+          git worktree remove gh-pages-branch
+
           TAG=v${{ needs.check-version.outputs.tag }}
           # During a force rebuild the tag already exists; skip re-tagging to
           # avoid a fatal error. A force rebuild doesn't mean a new upstream

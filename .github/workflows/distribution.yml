@@ -3,6 +3,11 @@ name: Hiawatha Distribution Hub
 on:
   schedule: [{cron: '0 2 * * *'}] # 2:00 AM UTC Daily
   workflow_dispatch:
+    inputs:
+      force_rebuild:
+        description: 'Force rebuild even if version tag already exists (use after packaging-only changes)'
+        type: boolean
+        default: false
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true # opt in before forced rollout June 2026
@@ -25,13 +30,18 @@ jobs:
             echo "ERROR: Could not fetch latest tag from GitLab" >&2
             exit 1
           fi
-          if git ls-remote --tags origin | grep -q "refs/tags/v$LATEST"; then
+          echo "tag=$LATEST" >> $GITHUB_OUTPUT
+          # force_rebuild bypasses the tag check — use after packaging-only changes
+          # (e.g. adding a missing service file) where the upstream version hasn't changed.
+          if [ "${{ github.event.inputs.force_rebuild }}" = "true" ]; then
+            echo "Force rebuild requested — skipping tag check."
+            echo "build_needed=true" >> $GITHUB_OUTPUT
+          elif git ls-remote --tags origin | grep -q "refs/tags/v$LATEST"; then
             echo "Version v$LATEST is already built."
             echo "build_needed=false" >> $GITHUB_OUTPUT
           else
             echo "New version v$LATEST found! Initiating build sequence."
             echo "build_needed=true" >> $GITHUB_OUTPUT
-            echo "tag=$LATEST" >> $GITHUB_OUTPUT
           fi
 
   build-debs:
@@ -271,5 +281,13 @@ jobs:
       - name: Prune old versions, tag release
         run: |
           python3 .github/scripts/janitor.py
-          git tag v${{ needs.check-version.outputs.tag }}
-          git push origin v${{ needs.check-version.outputs.tag }}
+          TAG=v${{ needs.check-version.outputs.tag }}
+          # During a force rebuild the tag already exists; skip re-tagging to
+          # avoid a fatal error. A force rebuild doesn't mean a new upstream
+          # release — the tag represents the upstream version, not the packaging.
+          if git rev-parse "$TAG" >/dev/null 2>&1; then
+            echo "Tag $TAG already exists (force rebuild of existing version), skipping."
+          else
+            git tag "$TAG"
+            git push origin "$TAG"
+          fi

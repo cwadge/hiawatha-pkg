@@ -162,15 +162,27 @@ jobs:
           echo "--- downloaded debs ---"
           ls -lh debs/ || true
       - name: Stage git credentials for Docker action
-        # The apt-repo-action container maps _github_home → /github/home (its HOME).
-        # Pre-seeding the credential store lets git push without a TTY prompt.
+        # The apt-repo-action container mounts _github_home as /github/home.
+        # Problem: docker run passes -e "HOME" with the runner's value (/home/runner),
+        # which overrides the Dockerfile's ENV HOME /github/home. Git inside the
+        # container then looks for credentials at /home/runner/.git-credentials,
+        # a path that doesn't exist in the container — so it falls back to interactive
+        # auth, which fails because there's no TTY (ENXIO: No such device or address).
+        #
+        # Fix: use http.extraHeader (the same mechanism actions/checkout uses) to embed
+        # credentials directly in the gitconfig — no credential helper, no TTY needed.
+        # GIT_CONFIG_GLOBAL propagated via GITHUB_ENV points git inside the container
+        # at /github/home/.gitconfig (the container-side mount of _github_home),
+        # bypassing HOME-based lookup entirely.
         run: |
           GH_HOME="${RUNNER_TEMP}/_github_home"
           mkdir -p "$GH_HOME"
-          git config --file "$GH_HOME/.gitconfig" credential.helper store
-          printf 'https://x-access-token:%s@github.com\n' \
-            "${{ secrets.GITHUB_TOKEN }}" > "$GH_HOME/.git-credentials"
-          chmod 600 "$GH_HOME/.git-credentials"
+          BASIC=$(printf 'x-access-token:%s' "${{ secrets.GITHUB_TOKEN }}" | base64 -w0)
+          git config --file "$GH_HOME/.gitconfig" \
+            http.https://github.com/.extraHeader "AUTHORIZATION: basic ${BASIC}"
+          chmod 600 "$GH_HOME/.gitconfig"
+          # /github/home is the container-side path; valid inside the container.
+          echo "GIT_CONFIG_GLOBAL=/github/home/.gitconfig" >> "$GITHUB_ENV"
       - name: Publish ${{ matrix.codename }} amd64
         if: steps.debs.outputs.amd64 != ''
         uses: MauroDruwel/apt-repo-action@v4

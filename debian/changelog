@@ -1,3 +1,11 @@
+hiawatha (12.0-2) unstable; urgency=medium
+
+  * Add debian/hiawatha.service — upstream CMakeLists.txt does not install
+    a systemd unit file; provide one as a packaging overlay so that the
+    service can be managed via systemctl after installation.
+
+ -- Chris Wadge <cwadge@tuxhelp.org>  Fri, 04 Apr 2026 12:00:00 +0000
+
 hiawatha (12.0-1) unstable; urgency=medium
 
   * Initial automated build

@@ -1,0 +1,16 @@
+[Unit]
+Description=Hiawatha web server
+After=network.target
+Documentation=man:hiawatha(1)
+
+[Service]
+Type=forking
+PIDFile=/run/hiawatha.pid
+ExecStartPre=/usr/sbin/hiawatha -k
+ExecStart=/usr/sbin/hiawatha
+ExecReload=/bin/kill -HUP $MAINPID
+KillMode=mixed
+PrivateTmp=yes
+
+[Install]
+WantedBy=multi-user.target

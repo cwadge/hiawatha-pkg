@@ -2,44 +2,44 @@
 Hash: SHA512
 
 Codename: bookworm
-Date: Sat, 04 Apr 2026 02:41:51 UTC
+Date: Sat, 04 Apr 2026 02:42:22 UTC
 Architectures: amd64 arm64
 Components: main
 Description: cwadge/hiawatha-pkg
 MD5Sum:
- e2b34eb16d4ede87df240c5b73a64af7 671 main/binary-amd64/Packages
- 970bb30a10596c50f18608a873871c00 472 main/binary-amd64/Packages.gz
+ cfc216de9b76cd02d8f4ac4cd4c0f57d 671 main/binary-amd64/Packages
+ 439fd6e82972fc62116e00250db39b56 471 main/binary-amd64/Packages.gz
  60b0806021d44505fd05c7d6164609fe 69 main/binary-amd64/Release
  7dc2ece601324125bf9d2c690f150c88 671 main/binary-arm64/Packages
  2451968e3b1ff3c42e3b524cd18f1971 471 main/binary-arm64/Packages.gz
  9a7c9a709fdbb70f5cb78ad5ad2a748f 69 main/binary-arm64/Release
 SHA1:
- 51224c9593a1313bb593803f76115a9f33eef242 671 main/binary-amd64/Packages
- edbc3e7c4c0431ed8e2b32df6bfd39a916ac4b19 472 main/binary-amd64/Packages.gz
+ 3a6bfae645ac4df768d1f57ac32bdbbf0ec32541 671 main/binary-amd64/Packages
+ a000f9e903a76d5ce48a7ccd7a820ff65c442c02 471 main/binary-amd64/Packages.gz
  b09703b6cdfe9948b02ac1b57a7b6b58544f8e1f 69 main/binary-amd64/Release
  6131b6cfdcee7f6633064a78806f7b1275dd6e85 671 main/binary-arm64/Packages
  a35b5538fea990da5c4a4f8af0dd765d03a2afea 471 main/binary-arm64/Packages.gz
  fc0a36b0325069a71a4fcd5263637c2e5dbc55b2 69 main/binary-arm64/Release
 SHA256:
- a18f049f860135e90b23720baddcaa68030fed29b00d8554324a6e07676fc430 671 main/binary-amd64/Packages
- 1f40e3f2efbb797ee6c8059f64d5607346260054cba614adc00651fb532a494e 472 main/binary-amd64/Packages.gz
+ e334098e186b185dc059843787a5b5127034c59aab7dd20eb500912220456705 671 main/binary-amd64/Packages
+ b9fc3e6a31977cf7224b869ea334a80094e361ae5a42a009ea614d768ef9d913 471 main/binary-amd64/Packages.gz
  e2b46b50ef4e758ca76bb50354fa11a83c6193e24560a19400b5f365fad7d31a 69 main/binary-amd64/Release
  75a8847b48b8be988a1bd32f9ed592f00415ff0376221654cc4e52683d5c4541 671 main/binary-arm64/Packages
  2c73fa55b15f8385d5b796e4bff2aa6991fbd166dd5c764df5e87a65da6731ce 471 main/binary-arm64/Packages.gz
  846881baddb82e63a38b10273bd5f9c40f92ced1b6d86427b57563f04868020c 69 main/binary-arm64/Release
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAEBCgAdFiEEeyyoPOVAaWxKyNKxgCdMOMyAzG4FAmnQem8ACgkQgCdMOMyA
-zG4ITQ//Vo6kdq6cODK89gl6wYEF5dsQ88/v3WfCX8cB+wGfQGjQ42Js6z9mONdQ
-3s/JUnzYAH406QUfPN3nrGyhRtUaopULWCQtDNYHbrh94MZ66yiNSynapGLTUFdF
-I9Gnm867PsYcMhgE/so0Rh3phnTfY0eEG5DVI+vSkDKfP1XD6kAvFEt0ztYScllV
-IF8QzECRBy5tiU6OXtScS963N6eNeOIPGfI1YXZ0dLNfxt6CmwQav1QfL8TYVOcU
-tX0cZ4Qd3uxVd4VVCi8BzPlh0f8y0KPnHaGDK7t5iMNBNx+kwWUOlaitVuY9QgiO
-WQMTlTzPJX4YmSM7mxZEj4uf6HqWp8uyUW7TirEekrAUfk6uclfIJ58XE2/6yNvc
-97DPU+dYQrcXzysAamosRtDZnNhaN+ZYQmlg2yidD4Qcib3HutKnlYOgw+NFHmae
-bLigAH1UNDLrxS3wXCixxwfA49SA+YD0J+ld2DjhGzLviNa/dKRhODYUysN5UsV6
-ULeYjgzBJGhmxjEpnXwFE4JywFIilkpsqFCLVJ4rsW0Vdfw+LeXrcx5vmGgqye73
-Z+LSh2X0WhLy/rVqQ8CD2b3x9Cca0Pj01zzFZ9NgE+S508pLPPrMdpfbbwT25lc0
-XP5e3XoIl6zDK0vS9S97cGgkOL6Ng6kF87oYPswAFzxFQxUcroQ=
-=jWUE
+iQIzBAEBCgAdFiEEeyyoPOVAaWxKyNKxgCdMOMyAzG4FAmnQeo8ACgkQgCdMOMyA
+zG58oA//SDpBGh0OT31RwkBpMBEF71QDJSWEvg+0P90oXxe9Lgmivw5klFhnaEK2
+3870LxAdDjt3WoxsEdgxrbYce6q9Mrq27ibMCITJwiDj1Vn0SEuVJ18H+9kdm6U9
+tK82z5UZB1Wk5cWe1N3vS9fHhtTwqde4//d8WI6mOZHX5kU3/SaWReAUFxCNlF/W
+zuhWRmLrcTJ6RPv4dKjwgW3HO6jvv15mZnko5QO+GpRYXJ0ihYCyUCXXFAMddG18
+U86o/N3qUZ16W6fP0AcLTjDAkSz4uA2pOz+W59ev/TtBc59fbkPTfWC5UQPDzOC1
+5TD4qszdpAx6ZgXaSxT+oE5LDN4s4NOkK/ANVrEYsF0IEpUOeLtOBg9LGtLTSe2k
+yPQviweusTmZc8gzS4QFzPhDwA+A16QacOLdMjb+TGPvTk4OEVN5LtwrHj/gE+vA
+3b7KoAObBWbHD0D+oKj0JahiRneJ2e4WTV8EXlG+icl1j/mQ4IvAWZpsGiBlmAfN
+xAbxZyLlrH6IN0KDvXbdCRyienDXbWXkmFgYI4O/39p1bebrKvEUoIDQpffq0sYd
+0xhAA5zMo2Be+QNjhGgPufCtPZCSgb1vFQ6LJLh9Rv/7ZvgOKzMc+dq1NHR7afRR
+h4Y7WL5xZch1E/9ndR/1OlgtHM/XpoN6UhgJ0VWHqwcA8unshFA=
+=2xnH
 -----END PGP SIGNATURE-----

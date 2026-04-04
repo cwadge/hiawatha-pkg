@@ -35,12 +35,12 @@ The service is enabled and started automatically on installation.
 
 ## Supported Platforms
 
-| Distribution       | Codename | Architecture | Status    |
-|--------------------|----------|--------------|-----------|
-| Debian 13 (Stable) | trixie   | amd64, arm64 | Supported |
-| Debian 12          | bookworm | amd64, arm64 | Supported |
-| Ubuntu 24.04 LTS   | noble    | amd64, arm64 | Supported |
-| Ubuntu 22.04 LTS   | jammy    | amd64, arm64 | Supported |
+| Distribution       | Codename | Architecture |
+|--------------------|----------|--------------|
+| Debian 13 (Stable) | trixie   | amd64, arm64 |
+| Debian 12          | bookworm | amd64, arm64 |
+| Ubuntu 24.04 LTS   | noble    | amd64, arm64 |
+| Ubuntu 22.04 LTS   | jammy    | amd64, arm64 |
 
 ## Security & Trust
 
@@ -55,13 +55,14 @@ The service is enabled and started automatically on installation.
 - **Hiawatha itself** *(bugs, feature requests, etc.)* → [Hiawatha GitLab](https://gitlab.com/hsleisink/hiawatha)
 - Questions? Feel free to open an issue or reach out via email.
 
+## License
+The CI/CD and repo code is licensed under the [MIT License](https://opensource.org/license/MIT). Hiawatha Webserver is licensed under the [GNU GPL v2](https://www.gnu.org/licenses/old-licenses/gpl-2.0.html).
+
 ## Contributing
 
-This repo is intentionally minimal so it stays easy to maintain. PRs for
-the CI/CD pipeline are welcome.
+This repo is intentionally minimal so it stays easy to maintain. PRs for the CI/CD pipeline are welcome.
 
-The workflow is also designed to be **easily forkable** for internal use. If you want to run a private package repository for a different project, whether for internal corporate tooling or another upstream, the only values you need to change are a five-line configuration block at the top of `.github/workflows/distribution.yml`. Everything else (Pages URL, repo
-links, artifact paths) derives from GitHub context automatically.
+The workflow is also designed to be **easily forkable** for internal use. If you want to run a private package repository for a different project, whether for internal corporate tooling or another upstream, the only values you need to change are a five-line configuration block at the top of `.github/workflows/distribution.yml`. Everything else (Pages URL, repo links, artifact paths) derives from GitHub context automatically.
 
 ---
 

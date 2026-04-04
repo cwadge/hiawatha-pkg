@@ -1,5 +1,6 @@
 #!/usr/bin/make -f
-export DEB_BUILD_MAINT_OPTIONS = hardening=+all
+
+include /usr/share/dpkg/architecture.mk
 
 %:
 	dh $@
@@ -13,3 +14,6 @@ override_dh_auto_configure:
 		-DWEBROOT_DIR=/var/www/hiawatha \
 		-DWORK_DIR=/var/lib/hiawatha \
 		-DLOG_DIR=/var/log/hiawatha
+
+override_dh_shlibdeps:
+	dh_shlibdeps -l$(CURDIR)/debian/hiawatha/usr/lib/$(DEB_HOST_MULTIARCH)/hiawatha

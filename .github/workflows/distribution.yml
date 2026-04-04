@@ -237,28 +237,6 @@ jobs:
       - uses: actions/checkout@v6
         with:
           fetch-depth: 0
-      - name: Update PKGBUILD for new version + valid checksums
-        run: |
-          TAG=${{ needs.check-version.outputs.tag }}
-          echo "Updating PKGBUILD to v${TAG}"
-          sed -i "s/^pkgver=.*/pkgver=${TAG}/" arch/PKGBUILD
-          sed -i "s/^pkgrel=.*/pkgrel=1/" arch/PKGBUILD
-          curl -L --fail -o hiawatha.tar.gz \
-            "https://gitlab.com/hsleisink/hiawatha/-/archive/v${TAG}/hiawatha-v${TAG}.tar.gz"
-          SHA=$(sha256sum hiawatha.tar.gz | cut -d' ' -f1)
-          sed -i "s|^sha256sums=.*|sha256sums=('${SHA}')|" arch/PKGBUILD
-          rm hiawatha.tar.gz
-          cat arch/PKGBUILD
-      - name: Push to AUR
-        uses: KSXGitHub/github-actions-deploy-aur@v3
-        with:
-          pkgname: hiawatha
-          pkgbuild: ./arch/PKGBUILD
-          commit_username: "GitHub Actions Bot"
-          commit_email: "actions@github.com"
-          ssh_private_key: ${{ secrets.AUR_SSH_PRIVATE_KEY }}
-          commit_message: "Update to v${{ needs.check-version.outputs.tag }}"
-          force_push: true
       - name: Prune old versions, tag release
         run: |
           python3 .github/scripts/janitor.py

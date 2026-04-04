@@ -1,16 +1,16 @@
 Package: hiawatha
-Version: 12.0-4~22.04u1
+Version: 12.0-5~22.04u1
 Architecture: arm64
 Maintainer: Chris Wadge <cwadge@tuxhelp.org>
 Installed-Size: 1751
 Depends: libc6 (>= 2.34), libcrypt1 (>= 1:4.1.0), libxml2 (>= 2.7.4), libxslt1.1 (>= 1.1.25), zlib1g (>= 1:1.2.3.3)
 Priority: optional
 Section: httpd
-Filename: pool/main/h/hiawatha/hiawatha_12.0-4~22.04u1_arm64.deb
-Size: 524004
-SHA256: 6d8374a09fa514ba1b6a2e9539bf2d3d17c90714dc9692b083a528d13e5dcac9
-SHA1: 8efcac46314efade7fd12b9609897056de9df805
-MD5sum: faba4056fedf63b794081423e2b9017c
+Filename: pool/main/h/hiawatha/hiawatha_12.0-5~22.04u1_arm64.deb
+Size: 524214
+SHA256: 0c148d9e77fb52cf26328473f60fb0ac02d9de20702b6375c39813de47cb194f
+SHA1: daca54067de622ee7b1eab2aec4f02acc725a618
+MD5sum: 87c36112c5d945c688f2f232e99fed17
 Description: Advanced and secure webserver
  Hiawatha is an open source webserver with security, ease of use
  and lightweight design as its key features.

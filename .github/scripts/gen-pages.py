@@ -126,7 +126,7 @@ sudo apt update &amp;&amp; sudo apt install hiawatha</pre>
       <ul>
         <li>Packages built in clean Docker containers from official upstream GitLab tags.</li>
         <li>Signed with a dedicated GPG public key:
-          <a href="{key_file}" style="color:#2563eb">{key_file}</a>.</li>
+          <a href="{key_file}" style="color:#2563eb">{key_file}</a></li>
         <li>Build pipeline is fully open source and runs publicly on GitHub Actions.</li>
       </ul>
     </div>

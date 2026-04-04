@@ -12,6 +12,23 @@ on:
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true # opt in before forced rollout June 2026
 
+  # ── Fork configuration ─────────────────────────────────────────────────────
+  # These are the only values that need changing when adapting this workflow
+  # for a different upstream project. Everything else derives from GitHub context.
+  #
+  # Also update the following if your distro/arch targets differ:
+  #   build-debs  matrix distro[]          Docker images for each target distro
+  #   build-debs  matrix arch[]            target architectures
+  #   publish-apt matrix codename[]        must mirror codenames from build-debs
+  #   publish-apt repo_supported_version   must mirror the codename list
+  #   publish-apt repo_supported_arch      must mirror the arch list
+  # ───────────────────────────────────────────────────────────────────────────
+  UPSTREAM_GITLAB_PROJECT: 'hsleisink%2Fhiawatha'  # URL-encoded, for GitLab API calls
+  UPSTREAM_GITLAB_PATH: 'hsleisink/hiawatha'         # slash-separated, for git clone
+  GPG_KEY_FILENAME: 'hiawatha.asc'                   # public key file in repo root
+  GIT_AUTHOR_NAME: 'GitHub Actions Bot'              # identity for automated commits
+  GIT_AUTHOR_EMAIL: 'actions@github.com'             # identity for automated commits
+
 jobs:
   check-version:
     runs-on: ubuntu-latest
@@ -24,7 +41,7 @@ jobs:
           fetch-depth: 0
       - id: sync
         run: |
-          LATEST=$(curl -s "https://gitlab.com/api/v4/projects/hsleisink%2Fhiawatha/repository/tags" \
+          LATEST=$(curl -s "https://gitlab.com/api/v4/projects/${{ env.UPSTREAM_GITLAB_PROJECT }}/repository/tags" \
             | jq -r '.[0].name' | sed 's/^v//')
           if [ -z "$LATEST" ] || [ "$LATEST" = "null" ]; then
             echo "ERROR: Could not fetch latest tag from GitLab" >&2
@@ -116,7 +133,7 @@ jobs:
           # All upstream tags are v-prefixed (e.g. v12.0); check-version strips
           # the v when setting the tag output, so we add it back here.
           git clone --depth=1 --branch "v${TAG}" \
-            https://gitlab.com/hsleisink/hiawatha.git /tmp/hiawatha-src
+            https://gitlab.com/${{ env.UPSTREAM_GITLAB_PATH }}.git /tmp/hiawatha-src
           # Merge upstream source into workspace without overwriting our debian/ packaging.
           rsync -a --exclude='.git' --exclude='debian' /tmp/hiawatha-src/ ./
           echo "--- workspace after source extraction ---"
@@ -268,32 +285,197 @@ jobs:
           fetch-depth: 0
       - name: Configure git identity
         run: |
-          git config user.name "GitHub Actions Bot"
-          git config user.email "actions@github.com"
+          git config user.name "${{ env.GIT_AUTHOR_NAME }}"
+          git config user.email "${{ env.GIT_AUTHOR_EMAIL }}"
       - name: Publish static assets to gh-pages
         run: |
-          # Two things need to live on gh-pages for the apt repo to be usable:
-          # .nojekyll — without this Jekyll suppresses files it doesn't
-          #   understand, breaking the repo structure on first push.
-          # hiawatha.asc — the public key lives in main; Pages only serves
-          #   from gh-pages, so it must be copied there to be accessible at
-          #   the https://cwadge.github.io/hiawatha-pkg/ URL.
+          TAG=${{ needs.check-version.outputs.tag }}
+          # Reconstruct the Debian revision using the same logic as build-debs
+          # so download links in index.html point to the correct filenames.
+          CHANGELOG_VER=$(head -1 debian/changelog | sed 's/^[^ ]* (\([^)]*\)).*/\1/')
+          CHANGELOG_UPSTREAM=$(echo "$CHANGELOG_VER" | sed 's/-[0-9]*$//')
+          CHANGELOG_REV=$(echo "$CHANGELOG_VER" | sed -n 's/.*-\([0-9]*\)$/\1/p')
+          CHANGELOG_REV=${CHANGELOG_REV:-1}
+          [ "$CHANGELOG_UPSTREAM" = "$TAG" ] && DEB_REV="$CHANGELOG_REV" || DEB_REV=1
+
+          FULL_TRIXIE="${TAG}-${DEB_REV}~deb13u1"
+          FULL_BOOKWORM="${TAG}-${DEB_REV}~deb12u1"
+          FULL_NOBLE="${TAG}-${DEB_REV}~24.04u1"
+          FULL_JAMMY="${TAG}-${DEB_REV}~22.04u1"
+          # PAGES_URL is derived from GitHub context — no hardcoded owner/repo.
+          # GITHUB_REPOSITORY is always "owner/repo"; strip the owner prefix for the
+          # repo name portion of the Pages URL.
+          PAGES_URL="https://${{ github.repository_owner }}.github.io/${GITHUB_REPOSITORY#*/}"
+          KEY_FILE="${{ env.GPG_KEY_FILENAME }}"
+          BASE="${PAGES_URL}/repo/pool/main/h/hiawatha"
+
+          cp "$KEY_FILE" /tmp/key_file_staged
+
           git fetch origin gh-pages
-          cp hiawatha.asc /tmp/hiawatha.asc
           git checkout gh-pages
-          changed=false
-          if [ ! -f .nojekyll ]; then
-            touch .nojekyll
-            git add .nojekyll
-            changed=true
-          fi
-          if ! cmp -s /tmp/hiawatha.asc hiawatha.asc 2>/dev/null; then
-            cp /tmp/hiawatha.asc hiawatha.asc
-            git add hiawatha.asc
-            changed=true
-          fi
-          if [ "$changed" = "true" ]; then
-            git commit -m "Update static assets on gh-pages"
+
+          cp /tmp/key_file_staged "$KEY_FILE"
+          touch .nojekyll
+          mkdir -p repo
+
+          # repo/index.html — static, explains this URL is a machine-readable
+          # apt repo and links back to the main page.
+          cat > repo/index.html << 'REPOEOF'
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Hiawatha APT Repository</title>
+  <style>
+    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+         max-width:600px;margin:5rem auto;padding:0 1.5rem;
+         color:#1a1d23;line-height:1.6}
+    @media(prefers-color-scheme:dark){body{color:#e2e8f0;background:#0f1117}}
+    code{background:#f1f5f9;padding:2px 6px;border-radius:3px;font-size:.88em}
+    @media(prefers-color-scheme:dark){code{background:#1e2130}}
+    a{color:#2563eb}
+  </style>
+</head>
+<body>
+  <h1 style="font-size:1.4rem;font-weight:600;margin-bottom:.75rem">APT Repository</h1>
+  <p>This is a machine-readable APT package repository, not a regular website.
+     Add it to your system using the instructions on the
+     <a href="../">Hiawatha packaging homepage</a>, then run
+     <code>apt update &amp;&amp; apt install hiawatha</code>.</p>
+  <p style="margin-top:1rem;color:#6b7280;font-size:.9rem">
+    Browsing directly? This URL serves package metadata consumed by apt,
+    not human-readable content.
+  </p>
+</body>
+</html>
+REPOEOF
+
+          # index.html — generated dynamically so download links always point
+          # to the current version. Shell variables expand; literal $ signs
+          # in shell commands within <pre> blocks are escaped with \.
+          cat > index.html << INDEXEOF
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Hiawatha Packages</title>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{background:#f4f5f7;color:#1a1d23;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:15px;line-height:1.6}
+    @media(prefers-color-scheme:dark){body{background:#0f1117;color:#e2e8f0}}
+    header{background:#fff;border-bottom:1px solid #e2e4e9;padding:1.5rem 2rem}
+    @media(prefers-color-scheme:dark){header{background:#1a1d23;border-color:#2a2d35}}
+    h1{font-size:1.4rem;font-weight:600}
+    .sub{color:#6b7280;font-size:.88rem;margin-top:.25rem}
+    .badge{display:inline-block;background:#ecfeff;color:#0e7490;border-radius:4px;font-size:.75rem;font-weight:600;padding:1px 8px;margin-right:3px}
+    @media(prefers-color-scheme:dark){.badge{background:#164e63;color:#67e8f9}}
+    .wrap{max-width:820px;margin:0 auto;padding:1.25rem 2rem}
+    h2{font-size:.95rem;font-weight:600;margin:1.5rem 0 .6rem;text-transform:uppercase;letter-spacing:.04em;color:#6b7280}
+    .card{background:#fff;border:1px solid #e2e4e9;border-radius:10px;padding:1.25rem;margin-bottom:1rem}
+    @media(prefers-color-scheme:dark){.card{background:#1a1d23;border-color:#2a2d35}}
+    pre{background:#1e2130;color:#e2e8f0;border-radius:6px;padding:1rem 1.1rem;overflow-x:auto;font-size:.82rem;font-family:'SF Mono','Fira Code',monospace;line-height:1.6;margin-top:.75rem}
+    .note{color:#6b7280;font-size:.88rem;margin-top:.6rem}
+    table{width:100%;border-collapse:collapse;font-size:.88rem}
+    th{text-align:left;padding:6px 10px;background:#f4f5f7;border:1px solid #e2e4e9;color:#6b7280;font-size:.75rem;text-transform:uppercase;letter-spacing:.05em}
+    @media(prefers-color-scheme:dark){th{background:#0f1117;border-color:#2a2d35}}
+    td{padding:8px 10px;border:1px solid #e2e4e9}
+    @media(prefers-color-scheme:dark){td{border-color:#2a2d35}}
+    code{background:#f1f5f9;padding:1px 5px;border-radius:3px;font-size:.85em;font-family:'SF Mono','Fira Code',monospace}
+    @media(prefers-color-scheme:dark){code{background:#2a2d35}}
+    .dl{display:inline-block;background:#2563eb;color:#fff;border-radius:4px;padding:2px 12px;font-size:.8rem;font-weight:500;margin:2px;text-decoration:none}
+    .dl:hover{background:#1d4ed8}
+    ul{padding-left:1.2rem;color:#6b7280;font-size:.9rem;line-height:1.9}
+    footer{border-top:1px solid #e2e4e9;padding:1rem 2rem;color:#6b7280;font-size:.82rem;margin-top:.25rem}
+    @media(prefers-color-scheme:dark){footer{border-color:#2a2d35}}
+    footer a{color:#6b7280}
+    .sep{margin:0 8px;opacity:.4}
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Hiawatha Packages</h1>
+    <p class="sub">Automated signed .deb packages, built daily from upstream GitLab releases.
+      &nbsp;<span class="badge">v${TAG}</span><span class="badge">amd64 &middot; arm64</span></p>
+  </header>
+  <div class="wrap">
+    <h2>Quick start</h2>
+    <div class="card">
+<pre># Import the signing key
+curl -fsSL ${PAGES_URL}/${KEY_FILE} \\
+  | gpg --dearmor \\
+  | sudo tee /usr/share/keyrings/hiawatha.gpg > /dev/null
+
+# Add the repository
+echo "deb [arch=\$(dpkg --print-architecture) signed-by=/usr/share/keyrings/hiawatha.gpg] \\
+  ${PAGES_URL}/repo \$(lsb_release -cs) main" \\
+  | sudo tee /etc/apt/sources.list.d/hiawatha.list
+
+# Install
+sudo apt update &amp;&amp; sudo apt install hiawatha</pre>
+      <p class="note">The service is enabled and started automatically on installation.</p>
+    </div>
+    <h2>Direct downloads &nbsp;<span style="text-transform:none;letter-spacing:0;font-weight:400">v${TAG}-${DEB_REV}</span></h2>
+    <div class="card">
+      <p class="note" style="margin-bottom:.75rem">For one-off installation without configuring the repository.
+        After downloading: <code>sudo dpkg -i hiawatha_*.deb &amp;&amp; sudo apt-get install -f</code></p>
+      <table>
+        <thead><tr><th>Distribution</th><th>Codename</th><th>Downloads</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>Debian 13 (Stable)</td><td><code>trixie</code></td>
+            <td>
+              <a class="dl" href="${BASE}/hiawatha_${FULL_TRIXIE}_amd64.deb">amd64</a>
+              <a class="dl" href="${BASE}/hiawatha_${FULL_TRIXIE}_arm64.deb">arm64</a>
+            </td>
+          </tr>
+          <tr>
+            <td>Debian 12</td><td><code>bookworm</code></td>
+            <td>
+              <a class="dl" href="${BASE}/hiawatha_${FULL_BOOKWORM}_amd64.deb">amd64</a>
+              <a class="dl" href="${BASE}/hiawatha_${FULL_BOOKWORM}_arm64.deb">arm64</a>
+            </td>
+          </tr>
+          <tr>
+            <td>Ubuntu 24.04 LTS</td><td><code>noble</code></td>
+            <td>
+              <a class="dl" href="${BASE}/hiawatha_${FULL_NOBLE}_amd64.deb">amd64</a>
+              <a class="dl" href="${BASE}/hiawatha_${FULL_NOBLE}_arm64.deb">arm64</a>
+            </td>
+          </tr>
+          <tr>
+            <td>Ubuntu 22.04 LTS</td><td><code>jammy</code></td>
+            <td>
+              <a class="dl" href="${BASE}/hiawatha_${FULL_JAMMY}_amd64.deb">amd64</a>
+              <a class="dl" href="${BASE}/hiawatha_${FULL_JAMMY}_arm64.deb">arm64</a>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <h2>Security &amp; trust</h2>
+    <div class="card">
+      <ul>
+        <li>Packages built in clean Docker containers from official upstream GitLab tags.</li>
+        <li>Signed with a dedicated GPG key &mdash; public key at <a href="${KEY_FILE}" style="color:#2563eb">${KEY_FILE}</a>.</li>
+        <li>Build pipeline is fully open source and runs publicly on GitHub Actions.</li>
+      </ul>
+    </div>
+  </div>
+  <footer>
+    Maintained by <a href="https://github.com/cwadge">cwadge</a><span class="sep">&middot;</span>
+    <a href="https://github.com/${GITHUB_REPOSITORY}">Packaging source</a><span class="sep">&middot;</span>
+    <a href="https://gitlab.com/${{ env.UPSTREAM_GITLAB_PATH }}">Hiawatha upstream</a><span class="sep">&middot;</span>
+    <a href="https://github.com/${GITHUB_REPOSITORY}/issues">Report an issue</a>
+  </footer>
+</body>
+</html>
+INDEXEOF
+
+          git add .nojekyll "$KEY_FILE" index.html repo/index.html
+          if ! git diff --cached --quiet; then
+            git commit -m "Update static assets on gh-pages [v${TAG}-${DEB_REV}]"
             git push origin gh-pages
           fi
           git checkout main

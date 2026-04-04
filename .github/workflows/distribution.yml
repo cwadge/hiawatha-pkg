@@ -131,6 +131,16 @@ jobs:
           echo "arm64=$ARM64" >> $GITHUB_OUTPUT
           echo "--- downloaded debs ---"
           ls -lh debs/ || true
+      - name: Stage git credentials for Docker action
+        # The apt-repo-action container maps _github_home → /github/home (its HOME).
+        # Pre-seeding the credential store lets git push without a TTY prompt.
+        run: |
+          GH_HOME="${RUNNER_TEMP}/_github_home"
+          mkdir -p "$GH_HOME"
+          git config --file "$GH_HOME/.gitconfig" credential.helper store
+          printf 'https://x-access-token:%s@github.com\n' \
+            "${{ secrets.GITHUB_TOKEN }}" > "$GH_HOME/.git-credentials"
+          chmod 600 "$GH_HOME/.git-credentials"
       - name: Publish ${{ matrix.codename }} amd64
         if: steps.debs.outputs.amd64 != ''
         uses: MauroDruwel/apt-repo-action@v4

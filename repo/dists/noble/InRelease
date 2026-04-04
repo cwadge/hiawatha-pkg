@@ -2,7 +2,7 @@
 Hash: SHA512
 
 Codename: noble
-Date: Sat, 04 Apr 2026 06:03:25 UTC
+Date: Sat, 04 Apr 2026 06:03:29 UTC
 Architectures: amd64 arm64
 Components: main
 Description: cwadge/hiawatha-pkg
@@ -29,17 +29,17 @@ SHA256:
  846881baddb82e63a38b10273bd5f9c40f92ced1b6d86427b57563f04868020c 69 main/binary-arm64/Release
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAEBCgAdFiEEeyyoPOVAaWxKyNKxgCdMOMyAzG4FAmnQqa0ACgkQgCdMOMyA
-zG7tOw//YziStd9mQfIVSBDb4FwewEkZLoerIhxlQLy563it5kBheJkA0JzbH/2q
-ZvsJouLSBoO2qAxfuRpU4scTlALHQ3PXefBY7kqMgBZhZ260ngHGz2ecy4xCgZXx
-04tH248eRUz/PGbIpNI+x9YbnMvs56Qe3nsoj1D2EHorItXSFaknz3MYZal6s0dz
-h2j/GHTyBnQhlaJsVYiCcurAQYlEy/SkB9v5MO+al+alogs8wdxFGEwrH6eg55Ff
-iss1xpkdzxWosonKgsgfQfKhFq4Xi4U6ecMST3F1GBpNWgBqR/tDiyt/0CvaZNiY
-4Vytp266kGNFrRHtVgHpWmg39SOA8ECXP7pm9PgzikBwdgO3MNRnbRWwZgrZa/BU
-pgjaFS9fG3d5jt34cOjLrE7GgTEwOGsroE12bpfHh0F9kCmBA3uZQ6UoXpgO/3Gn
-9wgo+1kHS6W5eIm8/vzf3zX3aNDqimv+yMbOE/qnn/OOy15Q+B2fd/GS1Jb5xrtf
-JsVaE/gvt/7emi0KTSM1T3m+GWFs+9LP1Vno+ERs2aZQZCC0Hb6DnAOtOlw08SP8
-RE++7HzzFNT5QaeSpjSSu+xcx/RDfiCwkF7c7AXYregmhohCrVJFjrgPmd3eSm2Z
-hCiE4x25UFxonV/QfZOP7HBbFCr88MEQhbFCAWdj3aRjUvDR5Ck=
-=X8NG
+iQIzBAEBCgAdFiEEeyyoPOVAaWxKyNKxgCdMOMyAzG4FAmnQqbEACgkQgCdMOMyA
+zG6GLw/+MlyEZClM7vDFp7TUqVTCH9KbOeYEVKB/pmbr2hkR07nArBl0bfK8qMCi
+tBaBmvmQ+0VOlBCw1o9RcTgVkVGQNUWjnLMbWUyldEzfldprs3MO/UKdD8RBazzZ
+cWUhS/gunL6C9CLaj/d9xQ4uRinmT+N9hI/NcPl46w+KTeBSNavSqB3lNgrxpIaM
+g5lGFrZD+dgq6nlk1HVtrbo96oOgDgUmD3/mMLGQxEeYC4OBbyutPPKSYU7MyzDU
+4Pz++d4b92RNxuANcrr6ptYqvbBhrMIYWrCDW6SQZ0fefYWWqG82EuKNYOOsG3T8
+BM7wt5zzzBlKbCHCXqq0tfQ+bTtgfwuTc+b6J2kbnbphC3OMPse/q7l05R0BQ7rq
+JEmCtezg82UF4NKSJyQYanyrJNBw9aAZbnLix5PIQgYsZcx+zljAkPxD7VbdKRPE
+jLXJCJkwcgVR2JmJ7C8MPwpAE9we/ZPc8fa1BmrREG6COqbBKZi40/JLTYyvmXVw
+TZ0jL2i8ocAyPYOr2uKZ6dboDG1JSr1p6631o6FHHjITuJHUWBZy+l3Go2m6kvg1
+3V3wPEVBXMRBlL36d4AdNtzDNamv/MkfzyiY8/nqxO32VhmrpwjJeREwfo3Macmv
+Ph1W89tq2QKhqDhEJT5QG6jmwsAnmfoAKbbSi/W+B+W1oPbkmi8=
+=qAjY
 -----END PGP SIGNATURE-----

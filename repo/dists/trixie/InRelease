@@ -2,7 +2,7 @@
 Hash: SHA512
 
 Codename: trixie
-Date: Sat, 04 Apr 2026 01:10:38 UTC
+Date: Sat, 04 Apr 2026 01:10:40 UTC
 Architectures: amd64 arm64
 Components: main
 Description: cwadge/hiawatha-pkg
@@ -29,17 +29,17 @@ SHA256:
  846881baddb82e63a38b10273bd5f9c40f92ced1b6d86427b57563f04868020c 69 main/binary-arm64/Release
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAEBCgAdFiEEeyyoPOVAaWxKyNKxgCdMOMyAzG4FAmnQZQ4ACgkQgCdMOMyA
-zG709w/+M/KSZ7lA2/RZGJOzXyqHlsl9yjiDYK004wf61VJdXaCfSwhqcriyOd0e
-26BztSa4ox8ieCm1L++rE85zbc5nJNt6SWbjSeO05l/nVmCYsRWXjnJvDBmkaFH2
-NLzajgQ2RTGoy3/0GzXAJ78jmhbYC821rS14RHy6HUgdhz7zIkwbtoiBlyLMnCqM
-zUHFeE6TXv8nyDk7OJMAKhLeXvZBqE/kQ+8tfrhMwSqzYsT0j+VEUptiupTSxF8n
-tYu/23y/GH0t4dAgjpw3wU0DfyXuAJQrcUeCliYitsA8g7lUpmwdbSM/KySZ+yn1
-54xwIjdmIE0yWw3xJ48E6nELR/4ya2K9FzqBvvrwSA9RU2t+fmKpVChbaqDdNQ3l
-/DHWMjv6dNgWF+HfmpV/zB289zoHbdSnpekVRv5gVuEqwwSW8/Lce4GTVIOwX7+C
-kjF53bir5xfKNzshtK6smEaXKB7jmsjyqLaqwQPIWUJ8p421DHNzTzFcGC3Oe2iV
-KbjGznGs/HPiVZZcvRFP1K/wETMK1JhQ9sxBNn0l7GZy4N3m6T+1SedRRBr5wwfU
-MqC/Pu9gpHbjDOxex+d/ql2w2WL0G+wblZ6Tmx8ITQ77MnHa0V13emwNWjFJ2u6A
-rCHECLTTFhBF0Hwd433BZG912JuAlbyXnZDS68GBFkeqFNeq4Is=
-=HTcc
+iQIzBAEBCgAdFiEEeyyoPOVAaWxKyNKxgCdMOMyAzG4FAmnQZRAACgkQgCdMOMyA
+zG6M0Q//Tz2EmYqH44loqM/W/JCT/cqqxnSOQp40AEIt6bOo+SeH8W+JdjBj+ifo
+FZOUqEM8988/x+nc6Z5LWJ8U8fS7m6lyMTFjCmydsB5bxG86e5SqDKYjICqAu++T
+0Mps3zjFBMsF2adRqfdqlxYdx4J6fR709x0ubgOvwloWbnyjMWeEOae2cl7aMqLg
+kegUJzSaCeQREn15AIHTCaTUppsHM6RgAgckn0Wk0932TH1B3TbuEd1B+Scya/eR
+hsiAvxfftAskS3aAWRdbhUe3yVaIbIiqqGQOBWdySYhbONMLbn9a/eGuQkim/nqs
+rG4g2HishISoAZao20juSo6WPN5xmsIgvkj1GM3kdov2DYigRVmKlheJWh8KCx9K
+Zw2r0WHEblhpHvrqSzo8P9LxCCTY16dGLbqsrXNf+F+lZBw1Sokk8u8sqDkWEopz
+VP/WkubyvOa9ikFjHSH8+lGdfW/jXa0q8VHsfAUVgQ57IQicBcAXKTrgIYxj5ofI
+0iPc1rZGoPP8ITCHxudMLw1JGsetxRpSBhdQkr/Rdr1Brjy3d/QcGQrfBpLyKbKl
+lVBqWqyxDQeLk8qpua9slySjthYjuDCoXEFiPCiRsxH5nbKoh5YJKRWJ0lC7kigH
+1iBE+BlAZIBmCEZGw51o9WHZENWrUBJ61aIvs+LDvP1aRmEjb7o=
+=AjCl
 -----END PGP SIGNATURE-----

@@ -49,8 +49,8 @@ The service is enabled and started automatically on installation.
 
 ## Reporting Issues
 
-- **Package-specific issues, installation problems, etc.** → [GitHub Issues](https://github.com/cwadge/hiawatha-pkg/issues)
-- **Hiawatha itself** *(bugs, feature requests, etc.)* → [Hiawatha GitLab](https://gitlab.com/hsleisink/hiawatha)
+- **Package-specific issues, repository problems, etc.** → [GitHub Issues](https://github.com/cwadge/hiawatha-pkg/issues)
+- **Hiawatha issues** *(bugs, feature requests, etc.)* → [Hiawatha GitLab](https://gitlab.com/hsleisink/hiawatha)
 - Questions? Feel free to open an issue or reach out via email.
 
 ## License

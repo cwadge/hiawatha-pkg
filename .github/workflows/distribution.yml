@@ -74,10 +74,12 @@ jobs:
           # Download the upstream tarball and extract it into the workspace
           # so dpkg-buildpackage finds CMakeLists.txt + src/ alongside debian/.
           TAG=${{ needs.check-version.outputs.tag }}
-          # Use the GitLab API archive endpoint; works regardless of whether the
-          # upstream tag has a v-prefix or not (check-version strips v with sed).
-          curl -fL -o /tmp/hiawatha.tar.gz             "https://gitlab.com/api/v4/projects/hsleisink%2Fhiawatha/repository/archive.tar.gz?sha=${TAG}"
-          tar -xzf /tmp/hiawatha.tar.gz --strip-components=1
+          # GitLab archive API 404s without auth; use git clone instead.
+          # All upstream tags are v-prefixed (e.g. v12.0); check-version strips
+          # the v when setting the tag output, so we add it back here.
+          git clone --depth=1 --branch "v${TAG}"               https://gitlab.com/hsleisink/hiawatha.git /tmp/hiawatha-src
+          # Merge upstream source into workspace without overwriting our debian/ packaging.
+          rsync -a --exclude='.git' --exclude='debian' /tmp/hiawatha-src/ ./
           echo "--- workspace after source extraction ---"
           ls -la CMakeLists.txt src/ 2>/dev/null || echo "WARNING: CMakeLists.txt or src/ not found"
       - name: Build

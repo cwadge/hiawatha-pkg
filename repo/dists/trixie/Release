@@ -1,25 +1,25 @@
 Codename: trixie
-Date: Sat, 04 Apr 2026 03:00:41 UTC
+Date: Sat, 04 Apr 2026 05:43:11 UTC
 Architectures: amd64 arm64
 Components: main
 Description: cwadge/hiawatha-pkg
 MD5Sum:
- 3bb22d1e8c6c99b4443dcce5b8f8559e 671 main/binary-amd64/Packages
- 36f43f4269d059188baf49f983c3f4c0 470 main/binary-amd64/Packages.gz
+ a7449645776a4ebecd231813d62520af 671 main/binary-amd64/Packages
+ ad1d369cf576944627cba33876db53aa 471 main/binary-amd64/Packages.gz
  60b0806021d44505fd05c7d6164609fe 69 main/binary-amd64/Release
  485cd4bfa7da34bc522c376e06f5f9ef 671 main/binary-arm64/Packages
  4653f04c47a14cb57c70c49a71a1b462 470 main/binary-arm64/Packages.gz
  9a7c9a709fdbb70f5cb78ad5ad2a748f 69 main/binary-arm64/Release
 SHA1:
- d0392690a99a8872ad291479b9bfd934b08041ff 671 main/binary-amd64/Packages
- f5b91d08cd6bd4087adc0e59ccf8d04ea6b2208f 470 main/binary-amd64/Packages.gz
+ 3b3b2cd69707cf8a33dee00e2a5174de78760918 671 main/binary-amd64/Packages
+ 722d6cabe375cba3cd4891690048feba98e8cd70 471 main/binary-amd64/Packages.gz
  b09703b6cdfe9948b02ac1b57a7b6b58544f8e1f 69 main/binary-amd64/Release
  35cced94e7308e89b48844e62b1e0bddd149f9cb 671 main/binary-arm64/Packages
  ea175887e46682a1f31bd137287361585fb03677 470 main/binary-arm64/Packages.gz
  fc0a36b0325069a71a4fcd5263637c2e5dbc55b2 69 main/binary-arm64/Release
 SHA256:
- 6bed12607cf6e53049c351e80e17fc2666a7d383dbb8e64dba30eed8bee3a555 671 main/binary-amd64/Packages
- c86312961460dfc52d549fcacf1e9c526a41b7908525d386e0bb9cc017e43a34 470 main/binary-amd64/Packages.gz
+ ab903fcc54b965568106e1e9579f62888003b9874a3da8c1e2122b51a1da1135 671 main/binary-amd64/Packages
+ dc1f2490fb28b31e54c400c737664133d56007efc700d1c9964fc516d1df85d3 471 main/binary-amd64/Packages.gz
  e2b46b50ef4e758ca76bb50354fa11a83c6193e24560a19400b5f365fad7d31a 69 main/binary-amd64/Release
  599922b3310befd30d6a9f9d506c5baf8b3dfcf1b289c130c802d97973486928 671 main/binary-arm64/Packages
  6de14ae8d1a7639b3d5b431221254f474c2bf5da9c835c70308211f05535a81b 470 main/binary-arm64/Packages.gz

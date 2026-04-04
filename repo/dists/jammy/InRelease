@@ -2,7 +2,7 @@
 Hash: SHA512
 
 Codename: jammy
-Date: Sat, 04 Apr 2026 03:00:41 UTC
+Date: Sat, 04 Apr 2026 05:43:11 UTC
 Architectures: amd64 arm64
 Components: main
 Description: cwadge/hiawatha-pkg
@@ -29,17 +29,17 @@ SHA256:
  846881baddb82e63a38b10273bd5f9c40f92ced1b6d86427b57563f04868020c 69 main/binary-arm64/Release
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAEBCgAdFiEEeyyoPOVAaWxKyNKxgCdMOMyAzG4FAmnQftkACgkQgCdMOMyA
-zG5hABAAlivaMugTzTjNOkALuGgrLXGzh/o0B/m1zvo9n9Pvs/2um5sk7z7IRZEF
-R5Y1oLMKAsv6qKnKKMhg6Cl+Il0Pbz5oeW1I9LlzcifN7ZndBUbg7Gf2vgBzDhlb
-MbDA7SPxQan+Khkhwk4kBbufC+OlYYuDP7ldyCIUB9Pa+a4fBFkfR76t/LZi5GXi
-k10QuyK1z6UPBjG35pz6pFgJCsukgeq6YDZkqebH0QRgZ+w96fKm2wtonVcfnM2+
-REFl/rMzWqQGgLCJe9k/Q3aYSRZrw2dzUCwsPTjTcOqdYT+QVJ8FmE00Uwz48Kj8
-Pki+W18mSubuO2la+AJs7bIA7DOOz0siZgpjvtbmWMnHiCe8To9l6qE4dTCwvu0S
-WZzfpNQ506bczbN5S5wTwCCzyN3New0mbbPGOUnqUbofrRX3jNoDqMR2f6ALFA6l
-fgZismKXEjdn0rgkYwbM2u+lXVB5ivz6d0un47UTIozYZ/1sv9fY690qt2Uqn2WU
-uLPz/0vohoy1qZ4odAAacwuEpMKnLS76wBYeQA8tQN2zLlZcvSUFtUpVgaisbxFs
-A+uWMqMAoO9BFcKYynoIMouYbcxTv/szgwECkaX8EtK5GSvnuAgkXRXPf4CPDVnC
-TFsaQU+R0SX1ivpr4LO9Auz5YBawV3lnhxPjS2s8dybKznHXm1o=
-=Avzv
+iQIzBAEBCgAdFiEEeyyoPOVAaWxKyNKxgCdMOMyAzG4FAmnQpO8ACgkQgCdMOMyA
+zG6fPRAAieKveQl7afF1Vj1I+qlFPmHdPmwLRyLZfF5xuCDs8jLQiu7z8BJ9zyVd
+4jEFcBHp6hfIyM+x3FEFJaH8mf44pZb1MoUxgj49SoQLWQ/+ez7GmpeuVdPeRON6
+EgltjD2cHsoB8JowUXIyNU+r+IoCJBpIjGRIwlsjA/AEUqcNgiN1AYM+e+GY9z4O
+ab/e9r1EgfAhlYm0k/vXRY/I2J+DN1++9FlC/PD6OOmw9vxsTaybc0x8VthHdn5U
+g7e24bXH1wQUmdVTqacEX+UgiVxd0JHujApZZmCih1g7SAA8OuFey6M9RMxwiEkU
+cMS2MixqS8J44+zAiZpsLVwBggG3Tzi1Hu9eSDpnYwihHmjN02epmO+FxUILZNMt
+32X22UT2n9z/waLte8ip4BrBxkHoHqxF3lgOBXCZQUK0wbAM84LXM95Ja+ZMm8Zo
+4L/UHYzclKXqk1rYOHoz0FuA67uTj2/X1sPPpqrNub7pxcHVNYWwud5T7vtFzj1T
+miaUDUU5HqrRO7TLUVa39Wb3Ie9rHqAjFRHf3EHk93tNwTsvZgYg3imG+JalfaC6
+HndJumipEz42KHU6cnykT77Qn+t3VY/UZxlzOes32InZD6iL+5loB+sodfAm4Ugg
+IkMoelDE9GILo+5Q1SiKhG4VM61pdhSPxd2dAiWj4ZBZNsajGVs=
+=BG3P
 -----END PGP SIGNATURE-----

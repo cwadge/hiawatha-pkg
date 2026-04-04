@@ -1,5 +1,5 @@
 Codename: bookworm
-Date: Sat, 04 Apr 2026 17:27:58 UTC
+Date: Sat, 04 Apr 2026 17:28:02 UTC
 Architectures: amd64 arm64
 Components: main
 Description: cwadge/hiawatha-pkg
@@ -7,20 +7,20 @@ MD5Sum:
  3b14542f2c3a024ad44c7a8e34ddf0af 671 main/binary-amd64/Packages
  aeaf74fb3e52df8c0ff00df2ccaaf212 470 main/binary-amd64/Packages.gz
  60b0806021d44505fd05c7d6164609fe 69 main/binary-amd64/Release
- 6979369f75685d18dd285ee9f547f537 671 main/binary-arm64/Packages
- 21773f4045b61b7818d897967e02d070 471 main/binary-arm64/Packages.gz
+ 0ac5fc2420c96ed0c0ae046a43bd9be6 671 main/binary-arm64/Packages
+ 20d36b8605e47ba80a4a16c45b95a1e4 472 main/binary-arm64/Packages.gz
  9a7c9a709fdbb70f5cb78ad5ad2a748f 69 main/binary-arm64/Release
 SHA1:
  d87e930bc19a05dce65c2c142426a0bbd40ed85e 671 main/binary-amd64/Packages
  addf80fbd90afc4693dc157c5016678071b34b2a 470 main/binary-amd64/Packages.gz
  b09703b6cdfe9948b02ac1b57a7b6b58544f8e1f 69 main/binary-amd64/Release
- d9a0f91d5313abbf40710acc88b6989f889d4da8 671 main/binary-arm64/Packages
- e3f33feca19ec16fd48035dd24eecd64e5edd64b 471 main/binary-arm64/Packages.gz
+ f806059e39bf797057617948ea399e3fa94891b0 671 main/binary-arm64/Packages
+ 07492194f41b7f2eab79c85d618331f323066dfc 472 main/binary-arm64/Packages.gz
  fc0a36b0325069a71a4fcd5263637c2e5dbc55b2 69 main/binary-arm64/Release
 SHA256:
  bc08ec5a42467514f1d77a7a55b3901c58b48b75bd56f2019242834c1ef57242 671 main/binary-amd64/Packages
  c47359d59ad89b182bf1060dba7910e8915d65ca9ce5f3ef0a0d0a9ce29159e0 470 main/binary-amd64/Packages.gz
  e2b46b50ef4e758ca76bb50354fa11a83c6193e24560a19400b5f365fad7d31a 69 main/binary-amd64/Release
- 2cc11a3bd976c0a1609fbc00e71b539b04cb2568cf64ba0f95a1c64668abc7bc 671 main/binary-arm64/Packages
- 7c31f08aced6e851e0d7d71dd8ea89664a95b20690578170273e5abd76a2bcb2 471 main/binary-arm64/Packages.gz
+ 7557c735b883f73c03c1889e7dcaa11f780cd87ec93eed0050191771c0fef284 671 main/binary-arm64/Packages
+ 1d6dd1dcc0ea25c8ae90af3c15e21636d658da3d5bea41bc4d3ee8766fdac5f8 472 main/binary-arm64/Packages.gz
  846881baddb82e63a38b10273bd5f9c40f92ced1b6d86427b57563f04868020c 69 main/binary-arm64/Release

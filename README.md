@@ -45,7 +45,7 @@ The service is enabled and started automatically on installation.
 ## Security & Trust
 
 - Every package is built in a clean Docker environment from official upstream GitLab tags.
-- Packages are signed with a dedicated GPG key — public key at [cwadge.github.io/hiawatha-pkg/hiawatha.asc](https://cwadge.github.io/hiawatha-pkg/hiawatha.asc).
+- Packages are signed with a dedicated [GPG key](https://cwadge.github.io/hiawatha-pkg/hiawatha.asc).
 - The entire build pipeline is open source and runs publicly on GitHub Actions.
 - Source for this packaging repo: [github.com/cwadge/hiawatha-pkg](https://github.com/cwadge/hiawatha-pkg)
 

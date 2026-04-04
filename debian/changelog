@@ -1,3 +1,12 @@
+hiawatha (12.0-3) unstable; urgency=medium
+
+  * Add debian/hiawatha.init — LSB-compliant SysV init script for
+    compatibility with sysvinit and OpenRC-based systems (Devuan, etc.).
+    dh_installinit handles permissions and update-rc.d integration
+    automatically via debhelper compat 13.
+
+ -- Chris Wadge <cwadge@tuxhelp.org>  Fri, 04 Apr 2026 20:00:00 +0000
+
 hiawatha (12.0-2) unstable; urgency=medium
 
   * Add debian/hiawatha.service — upstream CMakeLists.txt does not install
@@ -8,6 +17,6 @@ hiawatha (12.0-2) unstable; urgency=medium
 
 hiawatha (12.0-1) unstable; urgency=medium
 
-  * Initial automated build
+  * Initial automated build.
 
  -- Chris Wadge <cwadge@tuxhelp.org>  Wed, 01 Jan 2026 00:00:00 +0000

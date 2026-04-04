@@ -1,0 +1,28 @@
+Description: cwadge/hiawatha-pkg
+Codename: trixie
+Architectures: amd64 arm64
+Components: main
+SignWith: 7B2CA83CE540696C4AC8D2B180274C38CC80CC6E
+
+
+Description: cwadge/hiawatha-pkg
+Codename: bookworm
+Architectures: amd64 arm64
+Components: main
+SignWith: 7B2CA83CE540696C4AC8D2B180274C38CC80CC6E
+
+
+Description: cwadge/hiawatha-pkg
+Codename: jammy
+Architectures: amd64 arm64
+Components: main
+SignWith: 7B2CA83CE540696C4AC8D2B180274C38CC80CC6E
+
+
+Description: cwadge/hiawatha-pkg
+Codename: noble
+Architectures: amd64 arm64
+Components: main
+SignWith: 7B2CA83CE540696C4AC8D2B180274C38CC80CC6E
+
+

@@ -56,7 +56,8 @@ The service is enabled and started automatically on installation.
 - Questions? Feel free to open an issue or reach out via email.
 
 ## License
-The CI/CD and repo code is licensed under the [MIT License](https://opensource.org/license/MIT). Hiawatha Webserver is licensed under the [GNU GPL v2](https://www.gnu.org/licenses/old-licenses/gpl-2.0.html).
+- The CI/CD and repo code is licensed under the [MIT License](https://opensource.org/license/MIT).
+- Hiawatha Webserver is licensed under the [GNU GPL v2](https://www.gnu.org/licenses/old-licenses/gpl-2.0.html).
 
 ## Contributing
 

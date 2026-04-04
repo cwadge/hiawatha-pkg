@@ -54,17 +54,23 @@ jobs:
         run: |
           # Derive codename early so it's available to all subsequent steps.
           case "${{ matrix.distro }}" in
-            debian:13)    CODENAME=trixie   ;;
-            debian:12)    CODENAME=bookworm ;;
-            ubuntu:22.04) CODENAME=jammy    ;;
-            ubuntu:24.04) CODENAME=noble    ;;
+            debian:13)    CODENAME=trixie;   VER_SUFFIX=~deb13u1 ;;
+            debian:12)    CODENAME=bookworm; VER_SUFFIX=~deb12u1 ;;
+            ubuntu:22.04) CODENAME=jammy;    VER_SUFFIX=~22.04u1 ;;
+            ubuntu:24.04) CODENAME=noble;    VER_SUFFIX=~24.04u1 ;;
             *) echo "Unknown distro: ${{ matrix.distro }}" >&2 && exit 1 ;;
           esac
           echo "CODENAME=$CODENAME" >> $GITHUB_ENV
-          # Swap the distribution field on the first changelog line.
-          # Match the full dpkg changelog header pattern so a stale codename
-          # from a previous run can't silently corrupt the substitution the
-          # way a bare `s/unstable/…` would (e.g. "trixieixie").
+          # Append a distro-specific version suffix so each distro's .deb has a
+          # unique filename in reprepro's shared pool. Without this, the second
+          # codename to publish is rejected because its binary has a different hash
+          # from the first under the same pool path — reprepro won't allow
+          # hash-differing files at the same path. The ~ sorts the suffixed version
+          # below the base version, the standard Debian convention for rebuilds.
+          sed -i "1s/(\([^)]*\))/(\1${VER_SUFFIX})/" debian/changelog
+          # Swap the distribution field. Match the full dpkg changelog header
+          # pattern so a stale codename from a previous run can't silently corrupt
+          # the substitution the way a bare `s/unstable/…` would (e.g. "trixieixie").
           # apt-repo-action reads this from the deb's embedded
           # changelog (/usr/share/doc/hiawatha/changelog.Debian.gz)
           # and validates it against repo_supported_version.
@@ -136,6 +142,7 @@ jobs:
     if: needs.check-version.outputs.build_needed == 'true'
     strategy:
       fail-fast: false
+      max-parallel: 1  # serialize to prevent gh-pages push conflicts between codenames
       matrix:
         # Must stay in sync with the distro→codename mapping in build-debs above.
         codename: [trixie, bookworm, jammy, noble]

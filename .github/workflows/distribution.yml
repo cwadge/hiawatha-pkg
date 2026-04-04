@@ -62,7 +62,6 @@ jobs:
       - uses: actions/checkout@v6
       - name: Derive codename and update changelog
         run: |
-          # Derive codename early so it's available to all subsequent steps.
           case "${{ matrix.distro }}" in
             debian:13)    CODENAME=trixie;   VER_SUFFIX=~deb13u1 ;;
             debian:12)    CODENAME=bookworm; VER_SUFFIX=~deb12u1 ;;
@@ -71,6 +70,26 @@ jobs:
             *) echo "Unknown distro: ${{ matrix.distro }}" >&2 && exit 1 ;;
           esac
           echo "CODENAME=$CODENAME" >> $GITHUB_ENV
+          TAG=${{ needs.check-version.outputs.tag }}
+          # Determine the Debian revision. When the upstream version matches
+          # what's in the changelog, preserve the existing revision so that
+          # packaging-only bumps (e.g. 12.0-1 → 12.0-2 to ship a missing
+          # service file) survive across builds without manual intervention.
+          # When the upstream version is new, reset to 1 — the first packaging
+          # of any upstream release is always -1 by convention.
+          CHANGELOG_VER=$(head -1 debian/changelog | sed 's/^[^ ]* (\([^)]*\)).*/\1/')
+          CHANGELOG_UPSTREAM=$(echo "$CHANGELOG_VER" | sed 's/-[0-9]*$//')
+          CHANGELOG_REV=$(echo "$CHANGELOG_VER" | sed -n 's/.*-\([0-9]*\)$/\1/p')
+          CHANGELOG_REV=${CHANGELOG_REV:-1}
+          if [ "$CHANGELOG_UPSTREAM" = "$TAG" ]; then
+            DEB_REV="$CHANGELOG_REV"
+          else
+            DEB_REV=1
+          fi
+          # Rewrite the version in the changelog header from whatever the repo
+          # says to TAG-DEBREV. This makes the upstream tag the authoritative
+          # version source rather than a value maintained by hand in the repo.
+          sed -i "1s/([^)]*)/(${TAG}-${DEB_REV})/" debian/changelog
           # Append a distro-specific version suffix so each distro's .deb has a
           # unique filename in reprepro's shared pool. Without this, the second
           # codename to publish is rejected because its binary has a different hash

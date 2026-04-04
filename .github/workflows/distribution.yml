@@ -122,7 +122,17 @@ jobs:
           # Glob picks up both amd64 and arm64 legs for this codename.
           pattern: deb-${{ matrix.codename }}-*
           merge-multiple: true
-      - name: Publish ${{ matrix.codename }} packages to APT repo
+      - name: Resolve deb paths
+        id: debs
+        run: |
+          AMD64=$(ls debs/*_amd64.deb 2>/dev/null || true)
+          ARM64=$(ls debs/*_arm64.deb 2>/dev/null || true)
+          echo "amd64=$AMD64" >> $GITHUB_OUTPUT
+          echo "arm64=$ARM64" >> $GITHUB_OUTPUT
+          echo "--- downloaded debs ---"
+          ls -lh debs/ || true
+      - name: Publish ${{ matrix.codename }} amd64
+        if: steps.debs.outputs.amd64 != ''
         uses: MauroDruwel/apt-repo-action@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
@@ -136,10 +146,27 @@ jobs:
             arm64
           private_key: ${{ secrets.GPG_PRIVATE_KEY }}
           public_key: ${{ secrets.GPG_PUBLIC_KEY }}
-          file: "debs/*.deb"
-          file_target_version: ${{ matrix.codename }} # unambiguous per-leg target
+          file: ${{ steps.debs.outputs.amd64 }}
+          file_target_version: ${{ matrix.codename }}
           target_repository: ${{ github.repository }}
-          debug: true
+      - name: Publish ${{ matrix.codename }} arm64
+        if: steps.debs.outputs.arm64 != ''
+        uses: MauroDruwel/apt-repo-action@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          repo_supported_version: |
+            trixie
+            bookworm
+            jammy
+            noble
+          repo_supported_arch: |
+            amd64
+            arm64
+          private_key: ${{ secrets.GPG_PRIVATE_KEY }}
+          public_key: ${{ secrets.GPG_PUBLIC_KEY }}
+          file: ${{ steps.debs.outputs.arm64 }}
+          file_target_version: ${{ matrix.codename }}
+          target_repository: ${{ github.repository }}
 
   finalize:
     needs: [check-version, publish-apt]

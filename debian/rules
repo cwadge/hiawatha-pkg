@@ -8,7 +8,7 @@ include /usr/share/dpkg/architecture.mk
 override_dh_auto_configure:
 	dh_auto_configure -- \
 		-DCMAKE_INSTALL_PREFIX=/usr \
-		-DCMAKE_INSTALL_SYSCONFDIR=/etc/hiawatha \
+		-DCMAKE_INSTALL_SYSCONFDIR=/etc \
 		-DENABLE_TLS=ON \
 		-DENABLE_XSLT=ON \
 		-DWEBROOT_DIR=/var/www/hiawatha \

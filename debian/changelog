@@ -1,3 +1,13 @@
+hiawatha (12.0-5) unstable; urgency=medium
+
+  * debian/rules: fix CMAKE_INSTALL_SYSCONFDIR — was incorrectly set to
+    /etc/hiawatha, causing CMake to install config files into the nested
+    path /etc/hiawatha/hiawatha/ rather than /etc/hiawatha/. The variable
+    is a GNUInstallDirs base path; Hiawatha's CMakeLists.txt appends the
+    /hiawatha component itself. Correct value is /etc.
+
+ -- Chris Wadge <cwadge@tuxhelp.org>  Fri, 03 Apr 2026 23:00:00 +0000
+
 hiawatha (12.0-4) unstable; urgency=medium
 
   * debian/hiawatha.service: switch ExecStartPre from hiawatha -k to

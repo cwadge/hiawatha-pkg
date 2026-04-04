@@ -6,9 +6,9 @@ Documentation=man:hiawatha(1)
 [Service]
 Type=forking
 PIDFile=/run/hiawatha.pid
-ExecStartPre=/usr/sbin/hiawatha -k
+ExecStartPre=/usr/sbin/wigwam -q
 ExecStart=/usr/sbin/hiawatha
-ExecReload=/bin/kill -HUP $MAINPID
+ExecReload=/bin/sh -c '/usr/sbin/wigwam -q && /bin/kill -HUP $MAINPID'
 KillMode=mixed
 PrivateTmp=yes
 

@@ -1,3 +1,23 @@
+hiawatha (12.0-4) unstable; urgency=medium
+
+  * debian/hiawatha.service: switch ExecStartPre from hiawatha -k to
+    wigwam -q, the purpose-built config validator.
+  * debian/hiawatha.service: add config validation to ExecReload — run
+    wigwam -q before sending HUP so a broken config cannot take down a
+    running instance on reload. Shell wrapper required as systemd ExecReload
+    does not support conditional chaining natively; $MAINPID is expanded by
+    systemd before the string is passed to sh.
+  * debian/hiawatha.init: switch do_start() config check from hiawatha -k
+    to wigwam -q; remove stdout/stderr suppression so syntax errors are
+    visible rather than silently swallowed.
+  * debian/hiawatha.init: add wigwam -q to do_reload() so a bad config
+    cannot cause a live instance to be signalled into an undefined state.
+  * debian/hiawatha.init: add explicit wigwam -q pre-flight to the restart
+    case before do_stop(), ensuring config is verified while the server is
+    still running. do_start() retains its own check as a safety net.
+
+ -- Chris Wadge <cwadge@tuxhelp.org>  Fri, 03 Apr 2026 22:00:00 +0000
+
 hiawatha (12.0-3) unstable; urgency=medium
 
   * Add debian/hiawatha.init — LSB-compliant SysV init script for

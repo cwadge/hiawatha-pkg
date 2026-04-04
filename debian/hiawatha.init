@@ -22,7 +22,7 @@ SCRIPTNAME=/etc/init.d/$NAME
 . /lib/lsb/init-functions
 
 do_start() {
-    $DAEMON -k > /dev/null 2>&1 || return 2
+    /usr/sbin/wigwam -q || return 2
     start-stop-daemon --start --quiet --pidfile $PIDFILE \
         --exec $DAEMON --test > /dev/null || return 1
     start-stop-daemon --start --quiet --pidfile $PIDFILE \
@@ -39,6 +39,7 @@ do_stop() {
 }
 
 do_reload() {
+    /usr/sbin/wigwam -q || return 1
     start-stop-daemon --stop --signal HUP --quiet \
         --pidfile $PIDFILE --name $NAME
     return 0
@@ -62,6 +63,7 @@ case "$1" in
         ;;
     restart)
         log_daemon_msg "Restarting $NAME"
+        /usr/sbin/wigwam -q || { log_end_msg 1; exit 1; }
         do_stop
         do_start
         log_end_msg $?

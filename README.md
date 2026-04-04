@@ -7,8 +7,8 @@ simplicity, and low resource usage. This repository provides up-to-date,
 reproducible `.deb` packages built automatically from upstream GitLab releases.
 
 - Debian Stable, Debian Old Stable, Ubuntu LTS (22.04, 24.04)
-- Fully signed with maintainer GPG key
-- Transparent CI/CD on GitHub Actions
+- Fully signed with maintainer [GPG key](https://cwadge.github.io/hiawatha-pkg/hiawatha.asc)
+- Transparent CI/CD on [GitHub Actions](https://github.com/cwadge/hiawatha-pkg/actions)
 
 **Maintainer:** Chris Wadge `<cwadge@tuxhelp.org>`  
 GitHub: [cwadge](https://github.com/cwadge) | GitLab: [cwadge](https://gitlab.com/cwadge)

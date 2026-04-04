@@ -68,6 +68,17 @@ jobs:
           sed -i "1s/unstable/$CODENAME/" debian/changelog
           echo "--- changelog line 1 after sed ---"
           head -1 debian/changelog
+      - name: Fetch Hiawatha upstream source
+        run: |
+          # The packaging repo has debian/ but not the Hiawatha C source.
+          # Download the upstream tarball and extract it into the workspace
+          # so dpkg-buildpackage finds CMakeLists.txt + src/ alongside debian/.
+          TAG=${{ needs.check-version.outputs.tag }}
+          curl -fL -o /tmp/hiawatha.tar.gz \
+            "https://gitlab.com/hsleisink/hiawatha/-/archive/${TAG}/hiawatha-${TAG}.tar.gz"
+          tar -xzf /tmp/hiawatha.tar.gz --strip-components=1
+          echo "--- workspace after source extraction ---"
+          ls -la CMakeLists.txt src/ 2>/dev/null || echo "WARNING: CMakeLists.txt or src/ not found"
       - name: Build
         run: |
           # dpkg-buildpackage places output one level above the source tree.
@@ -89,7 +100,9 @@ jobs:
         run: |
           echo "--- workspace debs ---"
           ls -lh ./*.deb || { echo "ERROR: no .deb files in workspace"; exit 1; }
-          dpkg-deb --info ./*.deb | grep -E 'Package|Version|Architecture'
+          dpkg-deb --info ./*.deb | grep -E 'Package|Version|Architecture|Installed-Size'
+          echo '--- deb contents ---'
+          dpkg-deb --contents ./*.deb
       - name: Stage deb under codename directory
         run: |
           # Colons are illegal in artifact names, so distro string is not used directly.

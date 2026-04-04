@@ -2,7 +2,7 @@
 Hash: SHA512
 
 Codename: bookworm
-Date: Sat, 04 Apr 2026 02:59:24 UTC
+Date: Sat, 04 Apr 2026 02:59:25 UTC
 Architectures: amd64 arm64
 Components: main
 Description: cwadge/hiawatha-pkg
@@ -10,36 +10,36 @@ MD5Sum:
  d274d7e080d62d324871dbb8ff9e050c 671 main/binary-amd64/Packages
  6ee28ca9801684526ec89d7dc142af49 469 main/binary-amd64/Packages.gz
  60b0806021d44505fd05c7d6164609fe 69 main/binary-amd64/Release
- d5eaed1a8d70193f2835c1656c4a4a6a 671 main/binary-arm64/Packages
- bf0816e26d0444ebdece0eb267099c42 470 main/binary-arm64/Packages.gz
+ 22e0b1733c3b43e46ea92acd68f634ae 671 main/binary-arm64/Packages
+ 3fb0df17869bdafe020f5a6f646dc0cb 472 main/binary-arm64/Packages.gz
  9a7c9a709fdbb70f5cb78ad5ad2a748f 69 main/binary-arm64/Release
 SHA1:
  8e057333a05364554053a131045605accacef6f1 671 main/binary-amd64/Packages
  de74b86e73d2665035b64245f6172998e3d8471e 469 main/binary-amd64/Packages.gz
  b09703b6cdfe9948b02ac1b57a7b6b58544f8e1f 69 main/binary-amd64/Release
- 82368d988b08f849794e64bc3b4f757fc4f32757 671 main/binary-arm64/Packages
- 5221105421ba43befb71cdce5de4aa4d13f779c3 470 main/binary-arm64/Packages.gz
+ 2e1c3b5d38217a2751372c72a8c5ae7a01bf0014 671 main/binary-arm64/Packages
+ 34be758d96358ee8ac4bb12a0a57a515719f318b 472 main/binary-arm64/Packages.gz
  fc0a36b0325069a71a4fcd5263637c2e5dbc55b2 69 main/binary-arm64/Release
 SHA256:
  20596d99b535b660ec7348ab6824132b446ce38f36cd0589a8c4c31bad8c5337 671 main/binary-amd64/Packages
  915f3873cb6774e84f705d814017924b5f611b9846ccc9da26ccec8bc7ff1f43 469 main/binary-amd64/Packages.gz
  e2b46b50ef4e758ca76bb50354fa11a83c6193e24560a19400b5f365fad7d31a 69 main/binary-amd64/Release
- 988e656e7f0fefe7fa542b2eb115484824eab561d37ca831dc315938357736dd 671 main/binary-arm64/Packages
- 16e984baaebe0d8578b7ca289551699f362756c79afca251753cb90c48a6af4c 470 main/binary-arm64/Packages.gz
+ 508ef0ae1986cefa101df9c9ace5bcbb270285d6ee4c20d9632fdb34d095ac2c 671 main/binary-arm64/Packages
+ bb8c2618627d4fba3b360771e0465a2702a2a36f25612fc3855015c2fd2a3307 472 main/binary-arm64/Packages.gz
  846881baddb82e63a38b10273bd5f9c40f92ced1b6d86427b57563f04868020c 69 main/binary-arm64/Release
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAEBCgAdFiEEeyyoPOVAaWxKyNKxgCdMOMyAzG4FAmnQfowACgkQgCdMOMyA
-zG5OWBAAzajmXkIK5JyQUGy236BBk3tsBKswBC38OUIucAL/9kWCcsvvgli2D+5y
-mRnurXL/k9Z02ict2qFtWuPq3x5y806M/BaxG1FLi8dOmd3oEXucrFAxrWbz/9J7
-mLZxFadyHOwQq0m1aMOAoMnHCZCzSJrUItyXUtQAe2QWy2P4NBZ5slSk3BWZKsJn
-CV835WD4Qw8msV1eGxYdWBlCcFwtunOKBFOTs/TeTAOJXZgZHeBABYxQVqSL4jvz
-AKcZbqaaQKC9R7ekY4gd2u9ujoIksJj82IoF+VUJkCfVsEAYAYbgw9lDXHsA7p8R
-mVvJSow/Ghlisjk4EpQZZx9epSnNruSeu3Dk1PlqLeyh5HnyX4i5RnZlKZRnwf+H
-svffGQsJ4rL2MdkqWFSI2Iy7rZ7EE+YuV7EaG1Jk271siKLbY/Zuho5bYIY+S7Jk
-uWrtN2MsSFrJI9zPnI44o+Brf3CEjj/IFeEKui61Nc8fcIvVbK5TRL3JmZYHaIVm
-6S1NbL6XoRPtY2UgIhH8l7drZpFYd//U2FIb1gQ4yjSPi6ONhJhUumHYZN8lyD7p
-7a5cATBVvtlJ16U7F0fTQfxO0RI54WbZEmPmDloPTQX+u26yTHh14vho/HRDNeOr
-Vh10aTB/WaG98bUwvecw8TGvkznVZVhOvwNOEz/gnvPCM1U3umw=
-=sn/k
+iQIzBAEBCgAdFiEEeyyoPOVAaWxKyNKxgCdMOMyAzG4FAmnQfo0ACgkQgCdMOMyA
+zG6CcBAAo6ImyqSUHPLgTGEVyAowROjA8touRZjteWC6UEV2WJlHRK0KisTGzdKq
+NO1Dnl9B5h1NMRRMYUfQuFMrhTEijVtqGtuMJwsMRuRgU9km3B8s5Lzu8n3IE4ct
+CJUWDwuZ70/BOJgHZzZQDpd8/4cfjW8dQDoyYqtr8pszgufvQ1FHvhxTJXOa+CLo
+902jLVYEE0meFASjJYwXwiwGNmGvYqMktYgwKKPv4IuhleM6urd/ICkbL3ywPF2x
+Rb8ktjxqgSUsKRb93xzNkdlb75dFjqz5cuQiPoAVR6l4bHeE5Vdf5Q1SyHrgiseU
+2DOgDoLgs2/Osyeeincq4pktdkpPIxlFvJGMvhdveY16fVElAC/c02d/Zd8LIbk0
+wks2hZg+c+VgO2N96706UA3Nv0uDuK7/pRGPmRf2tKHvzQhk0yOGoruneF/s7SfX
+ql5QQGkaQmj0LEicv+n23ysjQl5LHC/LhVNyM5xH6nNeTu3D/l5+MxAj41XBd/59
+2OBYTp2FEGwM0xdW35vnymo/EhzBEKQglsoR1zypHODQSQkNB2DfL2MIM14aJBqu
+UChUYChgk6zZL66bkAI0+WDqzPA/XhkgJnPHeAglVE03vqxDoB9bBprVuQ5OiAhS
+mo4hkR/7Ene73BKqhG1AVisOdRjtcyfdaglga+/M+bB7vA8CztA=
+=Z2N3
 -----END PGP SIGNATURE-----

@@ -6,10 +6,6 @@ Hiawatha is a secure, lightweight web server with a focus on security,
 simplicity, and low resource usage. This repository provides up-to-date,
 reproducible `.deb` packages built automatically from upstream GitLab releases.
 
-- Debian Stable, Debian Old Stable, Ubuntu LTS (22.04, 24.04)
-- Fully signed with maintainer [GPG key](https://cwadge.github.io/hiawatha-pkg/hiawatha.asc)
-- Transparent CI/CD on [GitHub Actions](https://github.com/cwadge/hiawatha-pkg/actions)
-
 **Maintainer:** Chris Wadge `<cwadge@tuxhelp.org>`  
 GitHub: [cwadge](https://github.com/cwadge) | GitLab: [cwadge](https://gitlab.com/cwadge)
 
@@ -42,9 +38,9 @@ The service is enabled and started automatically on installation.
 
 ## Security & Trust
 
-- Every package is built in a clean Docker environment from official upstream GitLab tags.
+- Every package is built in a clean Docker environment from official upstream [GitLab tags](https://gitlab.com/hsleisink/hiawatha/-/tags).
 - Packages are signed with a dedicated [GPG key](https://cwadge.github.io/hiawatha-pkg/hiawatha.asc).
-- The entire build pipeline is open source and runs publicly on GitHub Actions.
+- The entire build pipeline is open source and runs publicly on [GitHub Actions](https://github.com/cwadge/hiawatha-pkg/actions).
 - Source for this packaging repo: [github.com/cwadge/hiawatha-pkg](https://github.com/cwadge/hiawatha-pkg)
 
 ## Reporting Issues
@@ -54,14 +50,14 @@ The service is enabled and started automatically on installation.
 - Questions? Feel free to open an issue or reach out via email.
 
 ## License
-- The CI/CD and repo code is licensed under the [MIT License](https://opensource.org/license/MIT).
+- The pipeline and repo code is licensed under the [MIT License](https://opensource.org/license/MIT).
 - Hiawatha Webserver is licensed under the [GNU GPL v2](https://www.gnu.org/licenses/old-licenses/gpl-2.0.html).
 
 ## Contributing
 
 This repo is intentionally minimal so it stays easy to maintain. PRs for the CI/CD pipeline are welcome.
 
-The workflow is also designed to be **easily forkable** for internal use. If you want to run a private package repository for a different project, whether for internal corporate tooling or another upstream, the only values you need to change are a five-line configuration block at the top of `.github/workflows/distribution.yml`. Everything else (Pages URL, repo links, artifact paths) derives from GitHub context automatically.
+The workflow is also designed to be **easily forkable** for internal use. If you want to run a private package repository for a different project, whether for internal corporate tooling or another upstream, the only values you need to change are a five-line configuration block at the top of `.github/workflows/distribution.yml` and generate your own keypairs. Everything else (Pages URL, repo links, artifact paths) derives from GitHub context automatically.
 
 ---
 

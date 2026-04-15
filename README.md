@@ -2,9 +2,8 @@
 
 **Automated, signed Debian/Ubuntu packages for the Hiawatha web server**
 
-Hiawatha is a secure, lightweight web server with a focus on security,
-simplicity, and low resource usage. This repository provides up-to-date,
-reproducible `.deb` packages built automatically from upstream GitLab releases.
+Hiawatha is a lightweight web server renowned for its robust security, elegant simplicity, and minimal resource consumption.
+This repository provides up-to-date, reproducible `.deb` packages built automatically from the official upstream GitLab releases.
 
 **Maintainer:** Chris Wadge `<cwadge@tuxhelp.org>`  
 GitHub: [cwadge](https://github.com/cwadge) | GitLab: [cwadge](https://gitlab.com/cwadge)

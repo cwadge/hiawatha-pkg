@@ -2,7 +2,7 @@
 Hash: SHA512
 
 Codename: bookworm
-Date: Tue, 05 May 2026 06:05:37 UTC
+Date: Tue, 05 May 2026 06:05:40 UTC
 Architectures: amd64 arm64
 Components: main
 Description: cwadge/hiawatha-pkg
@@ -29,17 +29,17 @@ SHA256:
  846881baddb82e63a38b10273bd5f9c40f92ced1b6d86427b57563f04868020c 69 main/binary-arm64/Release
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAEBCgAdFiEEeyyoPOVAaWxKyNKxgCdMOMyAzG4FAmn5iLEACgkQgCdMOMyA
-zG5utw/+OklKzKHBy5lUpa/Ef+N53mlrIVekLXeD22W33pWlCe70ts3etQwwMGBu
-n+fTWpTDZHxzhprhs8Qghq/SQT8g7Y9EgQbbHB1HSOBG8FKFgEbd3MGu5ciHEil9
-zDpfrH1C0Sk+YhyO21+xx5Bajb39MmOPuJRCv5CibIUl7pJ8kmNmhvQYkLoziZ24
-YK2zKHq6ar0//8xEbB7hjDN63OJGtq2diYDF1crYbgxm2YNFoY4lYAyr0GYVvNbc
-iUph1W0jlavWYyh3s98a6Z0kEPGwOmH+loAU6pfkPiTvXFhziyE4SABXwqFJXhLy
-sd+R/9gKuiwqvROnAAvqqXRfM9n1lnNDUwF7txvM/IXRDBCmuHh4IfXsEBV2gpG5
-n85Hpf/GLBZpnsTj1ccg5chQNAy6UtNhCtBKndtJDvrH5dgd26gOrFHG4MySDg3T
-RzhOHxg+uuJtn7yAnv6i031KkZ2tJRbHwkTYJX2kibFsO7k2lMQYcnhKKNlqUxTj
-s6h6HeklEz5I4ox/mJOtPRS9bEWtvWEDMdqjv+cEGAEwq6CaPIq6AeuF5gUtpR5m
-aiCu5Sk/6lIDRc+AOaqJtQYFqUS7KjdgrL6GooDIiEpK8eE8JdCvIiagHx8NC7Zz
-kIwgrbI9xgxpj57lq6dBHQQM2eM/ip3FGbofGxUh++tAsHbELyw=
-=Snmx
+iQIzBAEBCgAdFiEEeyyoPOVAaWxKyNKxgCdMOMyAzG4FAmn5iLQACgkQgCdMOMyA
+zG6vDxAAzhtzS3WcNj1KPAQOKD6FjdAZ6IdKmwjphVdUBPyxrROL/nEnCnBPNFDV
+4Gq1uuGlBM0s+/kxsPe81uAYqj6GzyQJQCe4CNZ5kIbBD8IhuG6zM6FDascHq1lQ
+Yc0qKWdVPjaejrBeaeEDHbe2EkcdKxt+ccINygDpYg6+cbYvGDv2hEbj4x+6yNDd
+qeBehMsntisY3+7T7t+znLkzJG+yNCBPVaEmKSsiFnp/Dal4BAZk6lx560jnDlr8
+qQT4rLHisH09iZYHcaLGw8pK+J145da3umhYNV70uCjRmr8BH2dZZ3qotIc1kHk5
+Rl3wA1bCuXsUsfE8Uw0wj/d+2d/7/wQz6MHpCNpqRvZxoJXglv2lNC+3M8lB6xw3
+k/DVSMFlwoygw/0ss1MvYpL4yoNibTe1LvPhd9nx/zFrTrpn372BtpMrI4xsOnBC
+Ul6BdC9U7jYtTixfLVTdVvgP/8wdK2B0H0IMeDsnmS+4WqSbBdETq7V9Y5rvwW87
++jGpfp8XWncd7f88BHtDyVFyIzOGjboOmHoDGgvJmHe2d2MrdNjh5EGhk6j8jPZH
+JtVZubwj5lpR9r5cX12H1cKURLvxlt4TFL5lgG1hN9+gas7YVaUEsPNcWmBoBTU3
+aJmG6KBrHOIEr9yDku7vkUxRkACkrUTuFzp8yWben5uxGKmxoDU=
+=ekvo
 -----END PGP SIGNATURE-----

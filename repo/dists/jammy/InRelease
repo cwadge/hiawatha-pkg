@@ -2,7 +2,7 @@
 Hash: SHA512
 
 Codename: jammy
-Date: Tue, 05 May 2026 05:58:29 UTC
+Date: Tue, 05 May 2026 05:58:32 UTC
 Architectures: amd64 arm64
 Components: main
 Description: cwadge/hiawatha-pkg
@@ -10,36 +10,36 @@ MD5Sum:
  ba2b533043de452721ebd6e37642e080 671 main/binary-amd64/Packages
  0f76a6c0d55827d9715d0242b615b95e 473 main/binary-amd64/Packages.gz
  60b0806021d44505fd05c7d6164609fe 69 main/binary-amd64/Release
- 1306ce6be71d6b9ab36f767c2f6f867f 671 main/binary-arm64/Packages
- d0f2cde9797d31a7069d9517d126d028 472 main/binary-arm64/Packages.gz
+ 71fcaee6cba8c6ff151a419d38ef3acf 671 main/binary-arm64/Packages
+ 7962ed2baf98f2c7b274be5726094c3d 471 main/binary-arm64/Packages.gz
  9a7c9a709fdbb70f5cb78ad5ad2a748f 69 main/binary-arm64/Release
 SHA1:
  3760261c1c8fb15cc3bd6008496cd78bf89fbd1c 671 main/binary-amd64/Packages
  c60778ad3d77c598322f7e5e0c485caacff0d67b 473 main/binary-amd64/Packages.gz
  b09703b6cdfe9948b02ac1b57a7b6b58544f8e1f 69 main/binary-amd64/Release
- 3a378730224150de11d6ba5dc04030610d31cf8f 671 main/binary-arm64/Packages
- a4779d28456bb5bfb86e8521b773d5691d3f1762 472 main/binary-arm64/Packages.gz
+ e5e7ffcc6771ea1196be9249ff8052cea2286e2e 671 main/binary-arm64/Packages
+ c6ede61fc627881a6cef4dc28039f23113bcf1f7 471 main/binary-arm64/Packages.gz
  fc0a36b0325069a71a4fcd5263637c2e5dbc55b2 69 main/binary-arm64/Release
 SHA256:
  1cea815a96033e73014688ffe4441e8593f947306d2491a8ba25401ccf5388e0 671 main/binary-amd64/Packages
  c53c60c4e58a0d04bc619b15cd1d253a4bab86bc3feefbf4bd1ebff83a4f2568 473 main/binary-amd64/Packages.gz
  e2b46b50ef4e758ca76bb50354fa11a83c6193e24560a19400b5f365fad7d31a 69 main/binary-amd64/Release
- 011ca505fc35d59692ddbf483da59a226c2bb6ec5110e1af26b3914bb0ecf02e 671 main/binary-arm64/Packages
- e3887c19ce26f4f538068755d3f69f818ee37980395a12123016260abac65370 472 main/binary-arm64/Packages.gz
+ f30697cc7549b39898d532c8c756391eba943d650d4e7b7739501ee5862e8f0a 671 main/binary-arm64/Packages
+ 77b6b594db6f699d31a2e51ffd9106e793fbfc38e8d918bd93187fb1b803e530 471 main/binary-arm64/Packages.gz
  846881baddb82e63a38b10273bd5f9c40f92ced1b6d86427b57563f04868020c 69 main/binary-arm64/Release
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAEBCgAdFiEEeyyoPOVAaWxKyNKxgCdMOMyAzG4FAmn5hwUACgkQgCdMOMyA
-zG5J5Q/5AbPoSgxJwZg1eU+ohIDr9qN3mAm88KtrbdDSeO93Qy+tlHFe9vaCcQC5
-1D41gIjYNFF82cz/HE6rR4RQrnH7+/Nobqbb+X8M/AsTjAXo4n6nwqJYHKrz4DO0
-LPTfPNE2304dYlQjQ3SKSrkgrFPDkybtUfqWrhJRbi/wMxbsfvLsn5epyl+FnnGM
-ljBht2KQZgaiCN80AOl7WCAzfms7Cety0LSGKl8RMXJJMoL+6pUnsb3kMlqU1z+8
-/LGqDMoAqXG7q9eV0vbEvxa4JBAYVYDi2JEMtTVI7NPKfsRNt7jzHSzfpZkzUOM+
-bQ/P1xvcWnV7NnHoqRY2+FRLkCSZKqKj6c6C28EDquDDoXYX28/krMMgRD095LhR
-IvSmIfbH5U7E5vNQeiem1gM1E4DEXWjP1y6iQ+5g+MFDcu4Uvz+DF8X2vhjFdNkK
-WU0c2AzELdO+dnIF0ubVuVzYGR7vi6ArpLPXatF2Imu8uzgDWg/oIXaVpd0YLRK6
-2/iszK4L0hKjgUgoUhCyvnobMsCJ995RxlrXxM6mu9Wu0+6EjtyeaJNs5lLGn/fp
-UYk+zcOBlL6FocQEuQsn2i4THxPxbQ1BaPMF2xxRUGaUvkhMTlkqU0kOxamq5O65
-XZBBIlWO1M9Wl0py6sz1scSDhCRzsSwZkTkrPiEAHSHrV0KAvww=
-=5SNf
+iQIzBAEBCgAdFiEEeyyoPOVAaWxKyNKxgCdMOMyAzG4FAmn5hwgACgkQgCdMOMyA
+zG5xxxAA4vJ122E0IbxgNGcoe3nZ7Bi23r5TJIFYokGALQUl9GjejIxeuLlM/ZUZ
+dSQcFENUZar8gFpzGD61QOVGGw3kzIp23EQlsSKJiwkejZLj173UNkGG6DmuCnA5
+2S/0rtJZN3tR8KpZn02uOEIERArk5FCE8+AvSBXJN6VkE1twcQEmvXaYH9KrY5+K
+zz9bGAtPquAuGa90XBTUs9ovX61LIoDtbguzAi8fFTfoq7S1SHfRgfnmV/V1fxJ9
+YrfDXsR4iw8UvXGTDihR188+Gt8ZQFfHwjWC6xDq4RO+X3kAEl5xP3tv+yI0CfX9
+ZmkOQo02oZXcU+ezV7x1eeAx+/UhmkjBPGyoq4YUd35mC1zyhEYT3/zfMAwq5WGJ
+ZbGKMsLJVNY8E3EDY5moMUlAiOhDFfu3j2fHt3ooZiYQQILVU0bqDawqoecicjfD
+WF+jTHg+2Q3ML8SalBpdvGszTviYIJM/eDHFl9V9z2pIonpMNd7AGQGvTZk59Si8
+VN2qDh4StOiPpw8qGJGrQfFpctDgdv/O0/NiHa1TqHIR2VRMllFBrQJUbPKLZuOX
+8u+X119zPeTXQPxa11vfqIkH/wDsLuHDYJ3utNxk0TaRHdkw5J3WWbNU0niE33EF
+wsUcFSZt8rGG0RiK4eboBJKuS1AODbq4oCUyGSiwyuXe0Adi1ZM=
+=Lz74
 -----END PGP SIGNATURE-----

@@ -1,25 +1,25 @@
 Codename: noble
-Date: Tue, 05 May 2026 05:58:32 UTC
+Date: Tue, 05 May 2026 06:05:37 UTC
 Architectures: amd64 arm64
 Components: main
 Description: cwadge/hiawatha-pkg
 MD5Sum:
- 8ca29071d304b8c2ccc34bab2cde6b0b 671 main/binary-amd64/Packages
- 1edd93f29684fa718778798baafda189 470 main/binary-amd64/Packages.gz
+ 6de8f440102439e342cd325ee2634a43 671 main/binary-amd64/Packages
+ 3e45ae4c0ece699a2b3cea633b0b4a99 469 main/binary-amd64/Packages.gz
  60b0806021d44505fd05c7d6164609fe 69 main/binary-amd64/Release
  5ef6318ecbc041b4af1f6b97114f33c7 671 main/binary-arm64/Packages
  028542bb0a5e395d32c9db50ef6adf3f 471 main/binary-arm64/Packages.gz
  9a7c9a709fdbb70f5cb78ad5ad2a748f 69 main/binary-arm64/Release
 SHA1:
- 00985f7bc4f515b5bd3481946fe09f1b9b15c894 671 main/binary-amd64/Packages
- b895f44ae00edc1f348b44b6ee3032c853fcf19b 470 main/binary-amd64/Packages.gz
+ 5fe6cd41ea3d7771890ec9db62c1ef8f1e7d639d 671 main/binary-amd64/Packages
+ 3e8e22189d0f0822d94ba1afa3d551b7cfc1c571 469 main/binary-amd64/Packages.gz
  b09703b6cdfe9948b02ac1b57a7b6b58544f8e1f 69 main/binary-amd64/Release
  ab04569090a4a719d8023dee9c13c547c0111b6c 671 main/binary-arm64/Packages
  f98eb9857941e280d6da86e37870d503dd11fd7c 471 main/binary-arm64/Packages.gz
  fc0a36b0325069a71a4fcd5263637c2e5dbc55b2 69 main/binary-arm64/Release
 SHA256:
- c6428c5f3e9562cabf36e1fb3829238ac0335a48425b8d1f53e0ae3dc03b0bcc 671 main/binary-amd64/Packages
- 45a47690ea346fc25c12744cb23f4919cda3f619a9ef60171f20a3b8e72176ef 470 main/binary-amd64/Packages.gz
+ 75fa08bd66cc52da0a30612e65226000e3a5777128c97ac8a612767eb09dd997 671 main/binary-amd64/Packages
+ 80e1823422575c6992fc65bee1b80fe509e27cc87d053725ffed612d4c33c34d 469 main/binary-amd64/Packages.gz
  e2b46b50ef4e758ca76bb50354fa11a83c6193e24560a19400b5f365fad7d31a 69 main/binary-amd64/Release
  fb39efda289768cb423794d25ce7bf409203ba07e2ddeba02c06cd6da257ad86 671 main/binary-arm64/Packages
  0e8560f6e9ba4589810f637f31ec736657406f80057d17e84f73c0e64861dd26 471 main/binary-arm64/Packages.gz

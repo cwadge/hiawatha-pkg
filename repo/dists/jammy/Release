@@ -1,25 +1,25 @@
 Codename: jammy
-Date: Tue, 05 May 2026 05:46:55 UTC
+Date: Tue, 05 May 2026 05:58:29 UTC
 Architectures: amd64 arm64
 Components: main
 Description: cwadge/hiawatha-pkg
 MD5Sum:
- 057826fd76a1aa7233aac0bdbf1ce637 671 main/binary-amd64/Packages
- 952ae67a97699334ced69bc31a9832ad 470 main/binary-amd64/Packages.gz
+ ba2b533043de452721ebd6e37642e080 671 main/binary-amd64/Packages
+ 0f76a6c0d55827d9715d0242b615b95e 473 main/binary-amd64/Packages.gz
  60b0806021d44505fd05c7d6164609fe 69 main/binary-amd64/Release
  1306ce6be71d6b9ab36f767c2f6f867f 671 main/binary-arm64/Packages
  d0f2cde9797d31a7069d9517d126d028 472 main/binary-arm64/Packages.gz
  9a7c9a709fdbb70f5cb78ad5ad2a748f 69 main/binary-arm64/Release
 SHA1:
- 1722a0d32fd29eb3a8a5da29c7fa5ed6bf5745fd 671 main/binary-amd64/Packages
- 07e8af0682dbf4d46bf4b9be1ecd1ea0673bd71f 470 main/binary-amd64/Packages.gz
+ 3760261c1c8fb15cc3bd6008496cd78bf89fbd1c 671 main/binary-amd64/Packages
+ c60778ad3d77c598322f7e5e0c485caacff0d67b 473 main/binary-amd64/Packages.gz
  b09703b6cdfe9948b02ac1b57a7b6b58544f8e1f 69 main/binary-amd64/Release
  3a378730224150de11d6ba5dc04030610d31cf8f 671 main/binary-arm64/Packages
  a4779d28456bb5bfb86e8521b773d5691d3f1762 472 main/binary-arm64/Packages.gz
  fc0a36b0325069a71a4fcd5263637c2e5dbc55b2 69 main/binary-arm64/Release
 SHA256:
- d1e7418bd3f95aa9a9398fb00cd6f8ccd1cb6c5cfb5badcc5be771f47450e142 671 main/binary-amd64/Packages
- 72ca5beb8575cf7f8142c9963f980b438041768a9d9fdc0cd1a2b42da87c79e1 470 main/binary-amd64/Packages.gz
+ 1cea815a96033e73014688ffe4441e8593f947306d2491a8ba25401ccf5388e0 671 main/binary-amd64/Packages
+ c53c60c4e58a0d04bc619b15cd1d253a4bab86bc3feefbf4bd1ebff83a4f2568 473 main/binary-amd64/Packages.gz
  e2b46b50ef4e758ca76bb50354fa11a83c6193e24560a19400b5f365fad7d31a 69 main/binary-amd64/Release
  011ca505fc35d59692ddbf483da59a226c2bb6ec5110e1af26b3914bb0ecf02e 671 main/binary-arm64/Packages
  e3887c19ce26f4f538068755d3f69f818ee37980395a12123016260abac65370 472 main/binary-arm64/Packages.gz

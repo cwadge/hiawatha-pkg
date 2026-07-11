@@ -5,9 +5,21 @@ on:
   workflow_dispatch:
     inputs:
       force_rebuild:
-        description: 'Force rebuild even if version tag already exists (use after packaging-only changes)'
+        description: 'Force rebuild even if version tag already exists (REQUIRES a debian/changelog revision bump first — see note below)'
         type: boolean
         default: false
+
+# Least privilege by default. Jobs that need more elevate explicitly below.
+permissions:
+  contents: read
+
+# Prevent a manual dispatch from racing the scheduled run. Publishing pushes to
+# gh-pages are serialized within a run by publish-apt's max-parallel: 1, but two
+# concurrent *runs* could still collide — this closes that gap. Do not cancel an
+# in-progress run: a half-finished publish/tag would leave the repo inconsistent.
+concurrency:
+  group: distribution-hub
+  cancel-in-progress: false
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true # opt in before forced rollout June 2026
@@ -32,6 +44,9 @@ env:
 jobs:
   check-version:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read   # checkout
+      actions: write   # self re-enable (keepalive) — see step below
     outputs:
       tag: ${{ steps.sync.outputs.tag }}
       build_needed: ${{ steps.sync.outputs.build_needed }}
@@ -39,21 +54,62 @@ jobs:
       - uses: actions/checkout@v6
         with:
           fetch-depth: 0
+      - name: Keepalive — reset the 60-day scheduler inactivity timer
+        # GitHub disables scheduled workflows in a public repo after 60 days with
+        # no *commit* activity on the default branch. Pushing tags or committing
+        # to gh-pages (which this pipeline does) does NOT count, and upstream
+        # releases roughly yearly — so without this the cron gets silently
+        # disabled between releases and new versions never build.
+        #
+        # Re-enabling the workflow via the API resets that timer without polluting
+        # git history. This is the same PUT .../enable call the widely-used
+        # keepalive actions issue. Runs first so a transient GitLab outage in the
+        # next step can't skip it; scheduled-only since manual runs don't need it.
+        if: github.event_name == 'schedule'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow enable distribution.yml
       - id: sync
         run: |
-          LATEST=$(curl -s "https://gitlab.com/api/v4/projects/${{ env.UPSTREAM_GITLAB_PROJECT }}/repository/tags" \
-            | jq -r '.[0].name' | sed 's/^v//')
-          if [ -z "$LATEST" ] || [ "$LATEST" = "null" ]; then
-            echo "ERROR: Could not fetch latest tag from GitLab" >&2
+          # order_by=version sorts tags by semantic version server-side (the API
+          # default is order_by=updated, which would chase a re-pushed old tag).
+          # The jq filter drops any rc/beta/nightly tags, then takes the highest.
+          # -fsS --retry 3 makes a GitLab 5xx a hard failure instead of silently
+          # feeding an error body into jq.
+          LATEST=$(curl -fsS --retry 3 \
+            "https://gitlab.com/api/v4/projects/${{ env.UPSTREAM_GITLAB_PROJECT }}/repository/tags?order_by=version&sort=desc" \
+            | jq -r '[.[].name | select(test("^v?[0-9][0-9.]*$"))][0] // empty' \
+            | sed 's/^v//')
+          if [ -z "$LATEST" ]; then
+            echo "ERROR: Could not determine latest release tag from GitLab" >&2
             exit 1
           fi
           echo "tag=$LATEST" >> $GITHUB_OUTPUT
-          # force_rebuild bypasses the tag check — use after packaging-only changes
-          # (e.g. adding a missing service file) where the upstream version hasn't changed.
+
           if [ "${{ github.event.inputs.force_rebuild }}" = "true" ]; then
             echo "Force rebuild requested — skipping tag check."
+            # Guard: a force rebuild that reuses an already-published version
+            # string produces identical .deb filenames with *different* hashes
+            # (builds aren't bit-reproducible), which reprepro rejects at the
+            # shared pool path. Fail fast here instead of deep inside publish-apt
+            # after an 8-leg matrix build. A force rebuild is only valid after a
+            # debian/changelog revision bump (e.g. 12.0-5 -> 12.0-6).
+            CL_VER=$(head -1 debian/changelog | sed 's/^[^ ]* (\([^)]*\)).*/\1/')
+            git fetch --depth=1 origin gh-pages 2>/dev/null || true
+            if git rev-parse --verify FETCH_HEAD >/dev/null 2>&1 && \
+               git ls-tree -r --name-only FETCH_HEAD -- repo/pool/main/h/hiawatha 2>/dev/null \
+                 | grep -q "hiawatha_${CL_VER}~"; then
+              echo "ERROR: version ${CL_VER} is already published." >&2
+              echo "       Bump the debian/changelog revision (e.g. ${CL_VER%-*}-N)" >&2
+              echo "       before forcing a rebuild, or reprepro will reject the upload." >&2
+              exit 1
+            fi
             echo "build_needed=true" >> $GITHUB_OUTPUT
-          elif git ls-remote --tags origin | grep -q "refs/tags/v$LATEST"; then
+          # Exact ref lookup — the old `git ls-remote | grep "refs/tags/v$LATEST"`
+          # was a substring/regex match: v12.0 matched inside v12.0.1 and v12.0-rc1,
+          # the dots were wildcards, and annotated-tag ^{} lines could slip past a
+          # bare anchor. --exit-code returns 0 only on an exact ref hit.
+          elif git ls-remote --exit-code --tags origin "refs/tags/v$LATEST" >/dev/null 2>&1; then
             echo "Version v$LATEST is already built."
             echo "build_needed=false" >> $GITHUB_OUTPUT
           else
@@ -77,6 +133,12 @@ jobs:
     runs-on: ${{ matrix.arch == 'arm64' && 'ubuntu-24.04-arm' || 'ubuntu-latest' }}
     steps:
       - uses: actions/checkout@v6
+        with:
+          # This checkout is bind-mounted into a container that runs *upstream's*
+          # build system. With the default (persist-credentials: true) the
+          # GITHUB_TOKEN is written into .git/config, handing a write-scoped token
+          # to any compromised upstream release. Nothing here pushes, so drop it.
+          persist-credentials: false
       - name: Derive codename and update changelog
         run: |
           case "${{ matrix.distro }}" in
@@ -238,7 +300,11 @@ jobs:
           echo "GIT_CONFIG_GLOBAL=/github/home/.gitconfig" >> "$GITHUB_ENV"
       - name: Publish ${{ matrix.codename }} amd64
         if: steps.debs.outputs.amd64 != ''
-        uses: MauroDruwel/apt-repo-action@v4
+        # Pinned to the v4 commit SHA rather than the movable v4 tag: this action
+        # receives the GPG *signing key*, so a compromised tag would let an attacker
+        # mint packages trusted by every machine that added this repo. Re-pin
+        # deliberately after auditing upstream changes when bumping.
+        uses: MauroDruwel/apt-repo-action@2ced6fde712c7fe3f572e2e611a4f2a879d86595 # v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           repo_supported_version: |
@@ -256,7 +322,7 @@ jobs:
           target_repository: ${{ github.repository }}
       - name: Publish ${{ matrix.codename }} arm64
         if: steps.debs.outputs.arm64 != ''
-        uses: MauroDruwel/apt-repo-action@v4
+        uses: MauroDruwel/apt-repo-action@2ced6fde712c7fe3f572e2e611a4f2a879d86595 # v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           repo_supported_version: |

@@ -1,5 +1,5 @@
 Codename: trixie
-Date: Mon, 27 Jul 2026 05:56:25 UTC
+Date: Mon, 27 Jul 2026 05:56:28 UTC
 Architectures: amd64 arm64
 Components: main
 Description: cwadge/hiawatha-pkg
@@ -7,20 +7,20 @@ MD5Sum:
  51d477c1c636c8455c9a47cad9f45dd0 717 main/binary-amd64/Packages
  1dddc91c4ce1263d257e3521b1eaa1d9 492 main/binary-amd64/Packages.gz
  60b0806021d44505fd05c7d6164609fe 69 main/binary-amd64/Release
- d97db16e6a76442427a69b5d68aba83e 671 main/binary-arm64/Packages
- f48157924d3b21fb5c14d9c1d93e0261 469 main/binary-arm64/Packages.gz
+ e9141e84ab2d6c178b74fe0a4b969ea8 717 main/binary-arm64/Packages
+ 80253383786dfb8523a8db32ff27409f 493 main/binary-arm64/Packages.gz
  9a7c9a709fdbb70f5cb78ad5ad2a748f 69 main/binary-arm64/Release
 SHA1:
  3a9dec37062a189594baf1efc20caa5b85eede88 717 main/binary-amd64/Packages
  69e8c9dbed3a5eadabd8e87713e68fcb8ddbfe22 492 main/binary-amd64/Packages.gz
  b09703b6cdfe9948b02ac1b57a7b6b58544f8e1f 69 main/binary-amd64/Release
- 34a4e2e6b9d778cf2352805d15b17b9953977799 671 main/binary-arm64/Packages
- 407438ed9a491a8c232599084489075a13665220 469 main/binary-arm64/Packages.gz
+ 2a11170c0624e8ebacd121a45eb1087d72b03f13 717 main/binary-arm64/Packages
+ 6f9bd436f51620023e2fb860b26f37be630cea12 493 main/binary-arm64/Packages.gz
  fc0a36b0325069a71a4fcd5263637c2e5dbc55b2 69 main/binary-arm64/Release
 SHA256:
  3d649d19d887b838226c5edfd2ca41867e337e933dfa55039a105eb2631c7a5b 717 main/binary-amd64/Packages
  cda6ceb352e73a14df33df4620288d4c2596e0bebd95a5bd3ae4bdbe5ea19b22 492 main/binary-amd64/Packages.gz
  e2b46b50ef4e758ca76bb50354fa11a83c6193e24560a19400b5f365fad7d31a 69 main/binary-amd64/Release
- 5bfbfd106ed923920427597ae7ecbac4bf8c462a3986dd4218dfb5cb17498f18 671 main/binary-arm64/Packages
- c61b7055750f87f0ec33115bacc1268c6a0681aeff2d602d9ed67944ed843412 469 main/binary-arm64/Packages.gz
+ fa8a8474348083f7194478ba0ab4e566e0eee681107dd631a12a4eebc4170cc8 717 main/binary-arm64/Packages
+ 0629f28334d74760476b44b395d5b1410b659afbc7511e2e674676d77af8599d 493 main/binary-arm64/Packages.gz
  846881baddb82e63a38b10273bd5f9c40f92ced1b6d86427b57563f04868020c 69 main/binary-arm64/Release

@@ -1,16 +1,17 @@
 Package: hiawatha
-Version: 12.2-1~24.04u1
+Version: 12.3-1~24.04u1
 Architecture: amd64
 Maintainer: Chris Wadge <cwadge@tuxhelp.org>
-Installed-Size: 1780
+Installed-Size: 1778
 Depends: libc6 (>= 2.38), libcrypt1 (>= 1:4.1.0), libxml2 (>= 2.7.4), libxslt1.1 (>= 1.1.25), zlib1g (>= 1:1.2.3.3)
+Homepage: https://www.hiawatha-webserver.org/
 Priority: optional
 Section: httpd
-Filename: pool/main/h/hiawatha/hiawatha_12.2-1~24.04u1_amd64.deb
-Size: 510186
-SHA256: 92ed2c9f092d5cc46a709ca4e636f3a74c7acb8ee63d00cc94019e8d6fa9c88c
-SHA1: 773aebc0e8134cf300110f5750373823ab62f4ac
-MD5sum: f64b484ace764ba30f86d9ffffe49107
+Filename: pool/main/h/hiawatha/hiawatha_12.3-1~24.04u1_amd64.deb
+Size: 510654
+SHA256: 2551dfb128631d0e87a89c1eef6076c8e3d6c5af7ef8a85265bda3d398bc63d4
+SHA1: 1ca9ea8c48266a16db5dca7bd5ea9955467b8ab3
+MD5sum: 9665652f4ef5cccb38104a13c6c0c552
 Description: Advanced and secure webserver
  Hiawatha is an open source webserver with security, ease of use
  and lightweight design as its key features.

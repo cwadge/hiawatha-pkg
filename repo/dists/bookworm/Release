@@ -1,25 +1,25 @@
 Codename: bookworm
-Date: Sun, 27 Sep 2026 07:52:45 UTC
+Date: Sun, 27 Sep 2026 07:53:24 UTC
 Architectures: amd64 arm64
 Components: main
 Description: cwadge/hiawatha-pkg
 MD5Sum:
- 0fe07f28cebc5685e08027b303d2e667 717 main/binary-amd64/Packages
- 93d638a6a87c4c24e92797405b085673 494 main/binary-amd64/Packages.gz
+ 27e4888fd1d641b8accff2c8c9bc597f 717 main/binary-amd64/Packages
+ 11143720b6888ccabd01d35436134175 494 main/binary-amd64/Packages.gz
  60b0806021d44505fd05c7d6164609fe 69 main/binary-amd64/Release
  2ae044e88a9ad8ed9e709cb050fc9fdb 717 main/binary-arm64/Packages
  bee28e754a328652960a5ef8d9ff8906 495 main/binary-arm64/Packages.gz
  9a7c9a709fdbb70f5cb78ad5ad2a748f 69 main/binary-arm64/Release
 SHA1:
- 163aea71337a3ed159c2aa8af8586e07954b7d07 717 main/binary-amd64/Packages
- 062600efc49c70c1f2d66c443179f7c0eabda780 494 main/binary-amd64/Packages.gz
+ 4e23921daf307a7812fbfe955982d5517c92673f 717 main/binary-amd64/Packages
+ 7e26095ae49211f1025211107540b28efc180331 494 main/binary-amd64/Packages.gz
  b09703b6cdfe9948b02ac1b57a7b6b58544f8e1f 69 main/binary-amd64/Release
  acd52ed96a5de9e2831eee02df54251038029251 717 main/binary-arm64/Packages
  b36172156bb7bbc512524a2f5027582f8e45829b 495 main/binary-arm64/Packages.gz
  fc0a36b0325069a71a4fcd5263637c2e5dbc55b2 69 main/binary-arm64/Release
 SHA256:
- 2d3725e183de63363c2b9d1422d6139ed94cbe3740c1d351e9be32889d5d6a07 717 main/binary-amd64/Packages
- 978d94bc8857b5d65a514d41c111368f67d1eae6c14dffdc15d9ca4b179b836d 494 main/binary-amd64/Packages.gz
+ 7f16d4ec5fcfc90fd6c72811e9fb20777a145b6e804a4d88d29e8b32a231bd70 717 main/binary-amd64/Packages
+ 1b50712e2ba5edbf566695bfa37e12d7733d67677ed61190c4c436d488484ec6 494 main/binary-amd64/Packages.gz
  e2b46b50ef4e758ca76bb50354fa11a83c6193e24560a19400b5f365fad7d31a 69 main/binary-amd64/Release
  9b6d016dcc6a54a4814d6c45ad8a56b633a9be3e0a5cfac3846b581bfbb74c20 717 main/binary-arm64/Packages
  7bc7741b99939bce348daf94cdf80ae74926099fa377b881d02448065935cabb 495 main/binary-arm64/Packages.gz

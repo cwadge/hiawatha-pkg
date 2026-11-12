@@ -29,8 +29,6 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-
   # ── Fork configuration ─────────────────────────────────────────────────────
   # These plus .github/targets.json (distros, arches, version suffixes) are the
   # only things to change when adapting this workflow for another upstream.
@@ -152,7 +150,7 @@ jobs:
           docker run --rm -v "$GITHUB_WORKSPACE/staging:/debs:ro" \
             -v "$GITHUB_WORKSPACE/.github/scripts/smoke-test.sh:/smoke-test.sh:ro" \
             "${{ matrix.image }}" bash /smoke-test.sh
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: deb-${{ matrix.codename }}-${{ matrix.arch }}
           path: staging/hiawatha_*.deb
@@ -177,7 +175,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - name: Download debs for ${{ matrix.codename }}
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         # A codename whose builds all failed has no artifacts; that's handled
         # (both publish steps skip), not an error.
         continue-on-error: true

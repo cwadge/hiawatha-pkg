@@ -1,0 +1,11 @@
+{
+  "_comment": "Single source of truth for build targets. Adding or retiring a distro is a one-entry change here; the workflow, publish step, verification and Pages index all read this file. suffix must sort below the bare version (leading ~) and be unique per codename so reprepro's shared pool never sees two different files under one name.",
+  "arches": ["amd64", "arm64"],
+  "targets": [
+    {"codename": "trixie",   "image": "debian:13",    "suffix": "~deb13u1",  "label": "Debian 13 (Stable)"},
+    {"codename": "bookworm", "image": "debian:12",    "suffix": "~deb12u1",  "label": "Debian 12 (Oldstable)"},
+    {"codename": "resolute", "image": "ubuntu:26.04", "suffix": "~26.04u1",  "label": "Ubuntu 26.04 LTS"},
+    {"codename": "noble",    "image": "ubuntu:24.04", "suffix": "~24.04u1",  "label": "Ubuntu 24.04 LTS"},
+    {"codename": "jammy",    "image": "ubuntu:22.04", "suffix": "~22.04u1",  "label": "Ubuntu 22.04 LTS"}
+  ]
+}

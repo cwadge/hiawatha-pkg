@@ -1,39 +1,39 @@
 name: Hiawatha Distribution Hub
 
 on:
-  schedule: [{cron: '0 2 * * *'}] # 2:00 AM UTC Daily
+  # Off the top of the hour: GitHub delays/drops :00 schedules under load.
+  schedule: [{cron: '37 2 * * *'}] # 02:37 UTC daily
+  # Manual run = "check now". There is no force-rebuild knob any more: the
+  # plan step rebuilds whatever the published indexes are missing, so a
+  # packaging fix ships by bumping the debian/changelog revision and pushing.
   workflow_dispatch:
-    inputs:
-      force_rebuild:
-        description: 'Force rebuild even if version tag already exists (REQUIRES a debian/changelog revision bump first — see note below)'
-        type: boolean
-        default: false
+  push:
+    branches: [main]
+    paths:
+      - 'debian/**'
+      - '.github/targets.json'
 
 # Least privilege by default. Jobs that need more elevate explicitly below.
 permissions:
   contents: read
 
-# Prevent a manual dispatch from racing the scheduled run. Publishing pushes to
-# gh-pages are serialized within a run by publish-apt's max-parallel: 1, but two
-# concurrent *runs* could still collide — this closes that gap. Do not cancel an
-# in-progress run: a half-finished publish/tag would leave the repo inconsistent.
+# Serialize runs (schedule vs. manual vs. push). Never cancel mid-run: a
+# half-finished publish/tag would leave the repo inconsistent.
+# Explicit bash = -eo pipefail (the implicit default is plain -e).
+defaults:
+  run:
+    shell: bash
+
 concurrency:
   group: distribution-hub
   cancel-in-progress: false
 
 env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true # opt in before forced rollout June 2026
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
   # ── Fork configuration ─────────────────────────────────────────────────────
-  # These are the only values that need changing when adapting this workflow
-  # for a different upstream project. Everything else derives from GitHub context.
-  #
-  # Also update the following if your distro/arch targets differ:
-  #   build-debs  matrix distro[]          Docker images for each target distro
-  #   build-debs  matrix arch[]            target architectures
-  #   publish-apt matrix codename[]        must mirror codenames from build-debs
-  #   publish-apt repo_supported_version   must mirror the codename list
-  #   publish-apt repo_supported_arch      must mirror the arch list
+  # These plus .github/targets.json (distros, arches, version suffixes) are the
+  # only things to change when adapting this workflow for another upstream.
   # ───────────────────────────────────────────────────────────────────────────
   UPSTREAM_GITLAB_PROJECT: 'hsleisink%2Fhiawatha'  # URL-encoded, for GitLab API calls
   UPSTREAM_GITLAB_PATH: 'hsleisink/hiawatha'         # slash-separated, for git clone
@@ -48,212 +48,128 @@ jobs:
       contents: read   # checkout
       actions: write   # self re-enable (keepalive) — see step below
     outputs:
-      tag: ${{ steps.sync.outputs.tag }}
-      build_needed: ${{ steps.sync.outputs.build_needed }}
+      tag: ${{ steps.plan.outputs.tag }}
+      version: ${{ steps.plan.outputs.version }}
+      build_needed: ${{ steps.plan.outputs.build_needed }}
+      finalize_needed: ${{ steps.plan.outputs.finalize_needed }}
+      build_matrix: ${{ steps.plan.outputs.build_matrix }}
+      publish_codenames: ${{ steps.plan.outputs.publish_codenames }}
     steps:
       - uses: actions/checkout@v6
-        with:
-          fetch-depth: 0
       - name: Keepalive — reset the 60-day scheduler inactivity timer
         # GitHub disables scheduled workflows in a public repo after 60 days with
-        # no *commit* activity on the default branch. Pushing tags or committing
-        # to gh-pages (which this pipeline does) does NOT count, and upstream
-        # releases roughly yearly — so without this the cron gets silently
-        # disabled between releases and new versions never build.
-        #
-        # Re-enabling the workflow via the API resets that timer without polluting
-        # git history. This is the same PUT .../enable call the widely-used
-        # keepalive actions issue. Runs first so a transient GitLab outage in the
-        # next step can't skip it; scheduled-only since manual runs don't need it.
+        # no commit activity on the default branch. Tags and gh-pages commits
+        # don't count, and upstream can go months between releases. Re-enabling
+        # via the API resets the timer without polluting history. Runs before the
+        # GitLab call so an upstream outage can't skip it.
         if: github.event_name == 'schedule'
         env:
           GH_TOKEN: ${{ github.token }}
         run: gh workflow enable distribution.yml
-      - id: sync
+      - name: Determine latest upstream release
+        id: upstream
         run: |
-          # order_by=version sorts tags by semantic version server-side (the API
-          # default is order_by=updated, which would chase a re-pushed old tag).
-          # The jq filter drops any rc/beta/nightly tags, then takes the highest.
-          # -fsS --retry 3 makes a GitLab 5xx a hard failure instead of silently
-          # feeding an error body into jq.
+          # order_by=version sorts semantically server-side; the jq filter drops
+          # rc/beta/nightly tags. -f makes a GitLab 5xx a hard failure.
           LATEST=$(curl -fsS --retry 3 \
-            "https://gitlab.com/api/v4/projects/${{ env.UPSTREAM_GITLAB_PROJECT }}/repository/tags?order_by=version&sort=desc" \
+            "https://gitlab.com/api/v4/projects/${UPSTREAM_GITLAB_PROJECT}/repository/tags?order_by=version&sort=desc" \
             | jq -r '[.[].name | select(test("^v?[0-9][0-9.]*$"))][0] // empty' \
             | sed 's/^v//')
           if [ -z "$LATEST" ]; then
-            echo "ERROR: Could not determine latest release tag from GitLab" >&2
+            echo "::error::Could not determine latest release tag from GitLab"
             exit 1
           fi
-          echo "tag=$LATEST" >> $GITHUB_OUTPUT
-
-          if [ "${{ github.event.inputs.force_rebuild }}" = "true" ]; then
-            echo "Force rebuild requested — skipping tag check."
-            # Guard: a force rebuild that reuses an already-published version
-            # string produces identical .deb filenames with *different* hashes
-            # (builds aren't bit-reproducible), which reprepro rejects at the
-            # shared pool path. Fail fast here instead of deep inside publish-apt
-            # after an 8-leg matrix build. A force rebuild is only valid after a
-            # debian/changelog revision bump (e.g. 12.0-5 -> 12.0-6).
-            CL_VER=$(head -1 debian/changelog | sed 's/^[^ ]* (\([^)]*\)).*/\1/')
-            git fetch --depth=1 origin gh-pages 2>/dev/null || true
-            if git rev-parse --verify FETCH_HEAD >/dev/null 2>&1 && \
-               git ls-tree -r --name-only FETCH_HEAD -- repo/pool/main/h/hiawatha 2>/dev/null \
-                 | grep -q "hiawatha_${CL_VER}~"; then
-              echo "ERROR: version ${CL_VER} is already published." >&2
-              echo "       Bump the debian/changelog revision (e.g. ${CL_VER%-*}-N)" >&2
-              echo "       before forcing a rebuild, or reprepro will reject the upload." >&2
-              exit 1
-            fi
-            echo "build_needed=true" >> $GITHUB_OUTPUT
-          # Exact ref lookup — the old `git ls-remote | grep "refs/tags/v$LATEST"`
-          # was a substring/regex match: v12.0 matched inside v12.0.1 and v12.0-rc1,
-          # the dots were wildcards, and annotated-tag ^{} lines could slip past a
-          # bare anchor. --exit-code returns 0 only on an exact ref hit.
-          elif git ls-remote --exit-code --tags origin "refs/tags/v$LATEST" >/dev/null 2>&1; then
-            echo "Version v$LATEST is already built."
-            echo "build_needed=false" >> $GITHUB_OUTPUT
+          echo "Latest upstream: v$LATEST"
+          echo "tag=$LATEST" >> "$GITHUB_OUTPUT"
+      - name: Plan — compare against what is actually published
+        id: plan
+        env:
+          TAG: ${{ steps.upstream.outputs.tag }}
+        run: |
+          # The published Packages indexes are the source of truth (see
+          # plan.py). Missing gh-pages (fresh fork) just means "build all".
+          REF=""
+          if git fetch --depth=1 origin gh-pages 2>/dev/null; then REF=FETCH_HEAD; fi
+          python3 .github/scripts/plan.py "$TAG" "$REF" | tee -a "$GITHUB_OUTPUT"
+          # finalize (verify, homepage, tag) also runs when nothing needs
+          # building but the release was never tagged — e.g. a broken distro
+          # was dropped from targets.json and everything left is published.
+          BUILD=$(sed -n 's/^build_needed=//p' "$GITHUB_OUTPUT" | tail -n1)
+          if [ "$BUILD" = true ] || ! git ls-remote --exit-code --tags origin "refs/tags/v${TAG}" >/dev/null; then
+            echo "finalize_needed=true" >> "$GITHUB_OUTPUT"
           else
-            echo "New version v$LATEST found! Initiating build sequence."
-            echo "build_needed=true" >> $GITHUB_OUTPUT
+            echo "finalize_needed=false" >> "$GITHUB_OUTPUT"
           fi
+      - name: Warn about unshipped packaging changes
+        if: github.event_name == 'push' && steps.plan.outputs.build_needed == 'false'
+        run: |
+          echo "::warning::debian/ changed but ${{ steps.plan.outputs.version }} is already published everywhere. Bump the debian/changelog revision (e.g. ${{ steps.plan.outputs.tag }}-N) to ship it."
 
   build-debs:
     needs: check-version
     if: needs.check-version.outputs.build_needed == 'true'
+    name: build (${{ matrix.codename }}, ${{ matrix.arch }})
     strategy:
-      fail-fast: false # don't cancel other matrix legs if one distro fails
-      matrix:
-        # Debian Stable (trixie/debian:13) is built first and foremost.
-        # Debian Old Stable (bookworm/debian:12) + all current Ubuntu LTS
-        # releases are included for widest reasonable compatibility.
-        # Hiawatha's minimal dependencies make multi-distro builds safe and reliable.
-        # ubuntu:26.04 omitted until the image stabilises in Docker Hub.
-        distro: ["debian:13", "debian:12", "ubuntu:22.04", "ubuntu:24.04"]
-        arch: [amd64, arm64]
+      fail-fast: false # one distro breaking must not cancel the others
+      matrix: ${{ fromJSON(needs.check-version.outputs.build_matrix) }}
     runs-on: ${{ matrix.arch == 'arm64' && 'ubuntu-24.04-arm' || 'ubuntu-latest' }}
     steps:
       - uses: actions/checkout@v6
         with:
-          # This checkout is bind-mounted into a container that runs *upstream's*
-          # build system. With the default (persist-credentials: true) the
-          # GITHUB_TOKEN is written into .git/config, handing a write-scoped token
-          # to any compromised upstream release. Nothing here pushes, so drop it.
+          # The workspace is bind-mounted into a container running *upstream's*
+          # build system; don't leave a write-scoped token in .git/config.
           persist-credentials: false
-      - name: Derive codename and update changelog
-        run: |
-          case "${{ matrix.distro }}" in
-            debian:13)    CODENAME=trixie;   VER_SUFFIX=~deb13u1 ;;
-            debian:12)    CODENAME=bookworm; VER_SUFFIX=~deb12u1 ;;
-            ubuntu:22.04) CODENAME=jammy;    VER_SUFFIX=~22.04u1 ;;
-            ubuntu:24.04) CODENAME=noble;    VER_SUFFIX=~24.04u1 ;;
-            *) echo "Unknown distro: ${{ matrix.distro }}" >&2 && exit 1 ;;
-          esac
-          echo "CODENAME=$CODENAME" >> $GITHUB_ENV
-          TAG=${{ needs.check-version.outputs.tag }}
-          # Determine the Debian revision. When the upstream version matches
-          # what's in the changelog, preserve the existing revision so that
-          # packaging-only bumps (e.g. 12.0-1 → 12.0-2 to ship a missing
-          # service file) survive across builds without manual intervention.
-          # When the upstream version is new, reset to 1 — the first packaging
-          # of any upstream release is always -1 by convention.
-          CHANGELOG_VER=$(head -1 debian/changelog | sed 's/^[^ ]* (\([^)]*\)).*/\1/')
-          CHANGELOG_UPSTREAM=$(echo "$CHANGELOG_VER" | sed 's/-[0-9]*$//')
-          CHANGELOG_REV=$(echo "$CHANGELOG_VER" | sed -n 's/.*-\([0-9]*\)$/\1/p')
-          CHANGELOG_REV=${CHANGELOG_REV:-1}
-          if [ "$CHANGELOG_UPSTREAM" = "$TAG" ]; then
-            DEB_REV="$CHANGELOG_REV"
-          else
-            DEB_REV=1
-          fi
-          # Rewrite the version in the changelog header from whatever the repo
-          # says to TAG-DEBREV. This makes the upstream tag the authoritative
-          # version source rather than a value maintained by hand in the repo.
-          sed -i "1s/([^)]*)/(${TAG}-${DEB_REV})/" debian/changelog
-          # Append a distro-specific version suffix so each distro's .deb has a
-          # unique filename in reprepro's shared pool. Without this, the second
-          # codename to publish is rejected because its binary has a different hash
-          # from the first under the same pool path — reprepro won't allow
-          # hash-differing files at the same path. The ~ sorts the suffixed version
-          # below the base version, the standard Debian convention for rebuilds.
-          sed -i "1s/(\([^)]*\))/(\1${VER_SUFFIX})/" debian/changelog
-          # Swap the distribution field. Match the full dpkg changelog header
-          # pattern so a stale codename from a previous run can't silently corrupt
-          # the substitution the way a bare `s/unstable/…` would (e.g. "trixieixie").
-          # apt-repo-action reads this from the deb's embedded
-          # changelog (/usr/share/doc/hiawatha/changelog.Debian.gz)
-          # and validates it against repo_supported_version.
-          sed -i "1s/) [a-z-]*;/) $CODENAME;/" debian/changelog
-          echo "--- changelog line 1 after sed ---"
-          head -1 debian/changelog
       - name: Fetch Hiawatha upstream source
+        env:
+          TAG: ${{ needs.check-version.outputs.tag }}
         run: |
-          # The packaging repo has debian/ but not the Hiawatha C source.
-          # Download the upstream tarball and extract it into the workspace
-          # so dpkg-buildpackage finds CMakeLists.txt + src/ alongside debian/.
-          TAG=${{ needs.check-version.outputs.tag }}
-          # GitLab archive API 404s without auth; use git clone instead.
-          # All upstream tags are v-prefixed (e.g. v12.0); check-version strips
-          # the v when setting the tag output, so we add it back here.
+          # GitLab's archive API 404s without auth; clone the tag instead.
           git clone --depth=1 --branch "v${TAG}" \
-            https://gitlab.com/${{ env.UPSTREAM_GITLAB_PATH }}.git /tmp/hiawatha-src
-          # Merge upstream source into workspace without overwriting our debian/ packaging.
-          rsync -a --exclude='.git' --exclude='debian' /tmp/hiawatha-src/ ./
-          echo "--- workspace after source extraction ---"
-          ls -la CMakeLists.txt src/ 2>/dev/null || echo "WARNING: CMakeLists.txt or src/ not found"
-      - name: Build
+            "https://gitlab.com/${UPSTREAM_GITLAB_PATH}.git" /tmp/hiawatha-src
+          # Overlay upstream onto the workspace without touching our packaging
+          # or pipeline scripts.
+          rsync -a --exclude='.git' --exclude='debian' --exclude='.github' \
+            /tmp/hiawatha-src/ ./
+          ls -la CMakeLists.txt src/ >/dev/null
+      - name: Build in ${{ matrix.image }}
         run: |
-          # dpkg-buildpackage places output one level above the source tree.
-          # Inside the container that's / (not host-accessible), so we copy
-          # the finished debs back into /work (the mounted workspace) before exit.
-          docker run --rm -v ${{ github.workspace }}:/work ${{ matrix.distro }} bash -c "
-            set -e
-            apt-get update -qq
-            DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-              build-essential cmake debhelper devscripts \
-              libxml2-dev libxslt1-dev zlib1g-dev libmbedtls-dev
-            cd /work
-            dpkg-buildpackage -us -uc -b
-            echo '--- debs produced ---'
-            ls -lh /*.deb
-            cp /*.deb /work/
-          "
-      - name: Verify debs landed in workspace
-        run: |
-          echo "--- workspace debs ---"
-          ls -lh ./*.deb || { echo "ERROR: no .deb files in workspace"; exit 1; }
-          # Loop over each deb individually; passing a glob to dpkg-deb --info
-          # causes it to treat subsequent filenames as control component names
-          # rather than additional packages, producing a spurious error.
-          for deb in ./*.deb; do
-            dpkg-deb --info "$deb" | grep -E 'Package|Version|Architecture|Installed-Size'
-          done
-          echo '--- deb contents ---'
-          for deb in ./*.deb; do
+          docker run --rm -v "$GITHUB_WORKSPACE:/work" \
+            -e VERSION="${{ needs.check-version.outputs.version }}" \
+            -e SUFFIX="${{ matrix.suffix }}" \
+            -e CODENAME="${{ matrix.codename }}" \
+            "${{ matrix.image }}" bash /work/.github/scripts/container-build.sh
+          # out/ was created by root in the container; copy, don't mv.
+          mkdir -p staging
+          cp out/hiawatha_*.deb staging/
+          for deb in staging/*.deb; do
+            dpkg-deb --info "$deb" | grep -E 'Package|Version|Architecture|Installed-Size|Depends'
             dpkg-deb --contents "$deb"
           done
-      - name: Stage deb under codename directory
+      - name: Smoke test in clean ${{ matrix.image }}
+        # Install with the distro's own deps, validate config, serve a request.
+        # Nothing that fails this gets signed or reaches anyone's apt.
         run: |
-          # Colons are illegal in artifact names, so distro string is not used directly.
-          mkdir -p staging/${{ env.CODENAME }}
-          # Stage only the main package; the dbgsym deb is excluded intentionally.
-          # Including it would cause Resolve deb paths in publish-apt to produce a
-          # multi-path string for a single arch, which apt-repo-action cannot handle.
-          mv ./hiawatha_*.deb staging/${{ env.CODENAME }}/
+          docker run --rm -v "$GITHUB_WORKSPACE/staging:/debs:ro" \
+            -v "$GITHUB_WORKSPACE/.github/scripts/smoke-test.sh:/smoke-test.sh:ro" \
+            "${{ matrix.image }}" bash /smoke-test.sh
       - uses: actions/upload-artifact@v4
         with:
-          # Codename in artifact name lets publish-apt download by codename glob.
-          name: deb-${{ env.CODENAME }}-${{ matrix.arch }}
-          path: staging/${{ env.CODENAME }}/
+          name: deb-${{ matrix.codename }}-${{ matrix.arch }}
+          path: staging/hiawatha_*.deb
+          if-no-files-found: error
 
   publish-apt:
     needs: [check-version, build-debs]
-    if: needs.check-version.outputs.build_needed == 'true'
+    # !cancelled(): publish whatever built even if another distro's leg failed,
+    # so one broken target can't hold the rest hostage. finalize still requires
+    # every leg to succeed, so the release isn't tagged and tomorrow's run
+    # retries only the missing pairs (and the failure email keeps coming).
+    if: ${{ !cancelled() && needs.check-version.outputs.build_needed == 'true' }}
     strategy:
       fail-fast: false
-      max-parallel: 1  # serialize to prevent gh-pages push conflicts between codenames
+      max-parallel: 1  # serialize gh-pages pushes between codenames
       matrix:
-        # Must stay in sync with the distro→codename mapping in build-debs above.
-        codename: [trixie, bookworm, jammy, noble]
+        codename: ${{ fromJSON(needs.check-version.outputs.publish_codenames) }}
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -262,33 +178,31 @@ jobs:
       - uses: actions/checkout@v6
       - name: Download debs for ${{ matrix.codename }}
         uses: actions/download-artifact@v4
+        # A codename whose builds all failed has no artifacts; that's handled
+        # (both publish steps skip), not an error.
+        continue-on-error: true
         with:
           path: debs
-          # Glob picks up both amd64 and arm64 legs for this codename.
           pattern: deb-${{ matrix.codename }}-*
           merge-multiple: true
-      - name: Resolve deb paths
+      - name: Resolve deb paths and repo config
         id: debs
         run: |
-          AMD64=$(ls debs/*_amd64.deb 2>/dev/null || true)
-          ARM64=$(ls debs/*_arm64.deb 2>/dev/null || true)
-          echo "amd64=$AMD64" >> $GITHUB_OUTPUT
-          echo "arm64=$ARM64" >> $GITHUB_OUTPUT
+          shopt -s nullglob
+          AMD64=(debs/*_amd64.deb) ARM64=(debs/*_arm64.deb)
+          {
+            echo "amd64=${AMD64[0]:-}"
+            echo "arm64=${ARM64[0]:-}"
+            echo 'codenames<<EOF'; jq -r '.targets[].codename' .github/targets.json; echo 'EOF'
+            echo 'arches<<EOF';    jq -r '.arches[]'           .github/targets.json; echo 'EOF'
+          } >> "$GITHUB_OUTPUT"
           echo "--- downloaded debs ---"
-          ls -lh debs/ || true
+          ls -lh debs/ 2>/dev/null || echo "(none)"
       - name: Stage git credentials for Docker action
-        # The apt-repo-action container mounts _github_home as /github/home.
-        # Problem: docker run passes -e "HOME" with the runner's value (/home/runner),
-        # which overrides the Dockerfile's ENV HOME /github/home. Git inside the
-        # container then looks for credentials at /home/runner/.git-credentials,
-        # a path that doesn't exist in the container — so it falls back to interactive
-        # auth, which fails because there's no TTY (ENXIO: No such device or address).
-        #
-        # Fix: use http.extraHeader (the same mechanism actions/checkout uses) to embed
-        # credentials directly in the gitconfig — no credential helper, no TTY needed.
-        # GIT_CONFIG_GLOBAL propagated via GITHUB_ENV points git inside the container
-        # at /github/home/.gitconfig (the container-side mount of _github_home),
-        # bypassing HOME-based lookup entirely.
+        # The apt-repo-action container gets HOME=/home/runner from the runner,
+        # so git inside it can't find credentials and falls back to a TTY prompt
+        # (ENXIO). Embed auth via http.extraHeader in a gitconfig on the
+        # _github_home mount and point GIT_CONFIG_GLOBAL at it.
         run: |
           GH_HOME="${RUNNER_TEMP}/_github_home"
           mkdir -p "$GH_HOME"
@@ -296,25 +210,20 @@ jobs:
           git config --file "$GH_HOME/.gitconfig" \
             http.https://github.com/.extraHeader "AUTHORIZATION: basic ${BASIC}"
           chmod 600 "$GH_HOME/.gitconfig"
-          # /github/home is the container-side path; valid inside the container.
           echo "GIT_CONFIG_GLOBAL=/github/home/.gitconfig" >> "$GITHUB_ENV"
+      # NOTE: apt-repo-action skips (exit 0) any version/arch/codename it has
+      # published before ("loop detection"), so re-publishing is idempotent.
+      # It also ignores reprepro's exit codes — finalize's verify step is what
+      # catches a failed include/export.
       - name: Publish ${{ matrix.codename }} amd64
         if: steps.debs.outputs.amd64 != ''
-        # Pinned to the v4 commit SHA rather than the movable v4 tag: this action
-        # receives the GPG *signing key*, so a compromised tag would let an attacker
-        # mint packages trusted by every machine that added this repo. Re-pin
-        # deliberately after auditing upstream changes when bumping.
+        # Pinned to a commit SHA: this action receives the GPG signing key.
+        # Re-pin deliberately after auditing upstream changes.
         uses: MauroDruwel/apt-repo-action@2ced6fde712c7fe3f572e2e611a4f2a879d86595 # v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          repo_supported_version: |
-            trixie
-            bookworm
-            jammy
-            noble
-          repo_supported_arch: |
-            amd64
-            arm64
+          repo_supported_version: ${{ steps.debs.outputs.codenames }}
+          repo_supported_arch: ${{ steps.debs.outputs.arches }}
           private_key: ${{ secrets.GPG_PRIVATE_KEY }}
           public_key: ${{ secrets.GPG_PUBLIC_KEY }}
           file: ${{ steps.debs.outputs.amd64 }}
@@ -325,14 +234,8 @@ jobs:
         uses: MauroDruwel/apt-repo-action@2ced6fde712c7fe3f572e2e611a4f2a879d86595 # v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          repo_supported_version: |
-            trixie
-            bookworm
-            jammy
-            noble
-          repo_supported_arch: |
-            amd64
-            arm64
+          repo_supported_version: ${{ steps.debs.outputs.codenames }}
+          repo_supported_arch: ${{ steps.debs.outputs.arches }}
           private_key: ${{ secrets.GPG_PRIVATE_KEY }}
           public_key: ${{ secrets.GPG_PUBLIC_KEY }}
           file: ${{ steps.debs.outputs.arm64 }}
@@ -340,76 +243,55 @@ jobs:
           target_repository: ${{ github.repository }}
 
   finalize:
-    needs: [check-version, publish-apt]
-    if: needs.check-version.outputs.build_needed == 'true'
+    # Runs only if no build or publish leg failed (skipped is fine: nothing to
+    # build but the release still needs verifying/tagging).
+    needs: [check-version, build-debs, publish-apt]
+    if: >-
+      ${{ !cancelled()
+          && needs.check-version.outputs.finalize_needed == 'true'
+          && !contains(needs.*.result, 'failure') }}
     runs-on: ubuntu-latest
     permissions:
       contents: write
+    env:
+      TAG: ${{ needs.check-version.outputs.tag }}
+      VERSION: ${{ needs.check-version.outputs.version }}
     steps:
       - uses: actions/checkout@v6
-        with:
-          fetch-depth: 0
-      - name: Configure git identity
+      - name: Check out gh-pages alongside main
         run: |
-          git config user.name "${{ env.GIT_AUTHOR_NAME }}"
-          git config user.email "${{ env.GIT_AUTHOR_EMAIL }}"
+          git config user.name "$GIT_AUTHOR_NAME"
+          git config user.email "$GIT_AUTHOR_EMAIL"
+          git fetch --depth=1 origin gh-pages
+          git worktree add -B gh-pages gh-pages-branch FETCH_HEAD
+      - name: Verify published repo end to end
+        # Signature, signed hashes vs. index files, expected version for every
+        # codename/arch, and pool file integrity. Runs before tagging and before
+        # the homepage advertises the new version.
+        run: python3 .github/scripts/verify-repo.py gh-pages-branch/repo "$GPG_KEY_FILENAME" "$VERSION"
       - name: Publish static assets to gh-pages
         run: |
-          TAG=${{ needs.check-version.outputs.tag }}
-          # Reconstruct Debian revision using the same logic as build-debs so
-          # download links in index.html point to the correct filenames.
-          CHANGELOG_VER=$(head -1 debian/changelog | sed 's/^[^ ]* (\([^)]*\)).*/\1/')
-          CHANGELOG_UPSTREAM=$(echo "$CHANGELOG_VER" | sed 's/-[0-9]*$//')
-          CHANGELOG_REV=$(echo "$CHANGELOG_VER" | sed -n 's/.*-\([0-9]*\)$/\1/p')
-          CHANGELOG_REV=${CHANGELOG_REV:-1}
-          [ "$CHANGELOG_UPSTREAM" = "$TAG" ] && DEB_REV="$CHANGELOG_REV" || DEB_REV=1
-
           PAGES_URL="https://${{ github.repository_owner }}.github.io/${GITHUB_REPOSITORY#*/}"
-          KEY_FILE="${{ env.GPG_KEY_FILENAME }}"
-
-          # Generate HTML before switching branches — the script lives in main.
-          export UPSTREAM_GITLAB_PATH="${{ env.UPSTREAM_GITLAB_PATH }}"
-          python3 .github/scripts/gen-pages.py "$PAGES_URL" "$KEY_FILE" "$TAG" "$DEB_REV"
-
-          cp "$KEY_FILE" /tmp/key_file_staged
-
-          git fetch origin gh-pages
-          git checkout gh-pages
-
+          python3 .github/scripts/gen-pages.py "$PAGES_URL" "$GPG_KEY_FILENAME" "$TAG" "$VERSION" gh-pages-branch
+          cp "$GPG_KEY_FILENAME" gh-pages-branch/
+          cd gh-pages-branch
           touch .nojekyll
-          mkdir -p repo
-          cp /tmp/key_file_staged "$KEY_FILE"
-          cp /tmp/index.html index.html
-          cp /tmp/repo-index.html repo/index.html
-
-          git add .nojekyll "$KEY_FILE" index.html repo/index.html
+          # gh-pages was originally branched from main; drop the stale copies of
+          # the pipeline/packaging that otherwise get served on the Pages site.
+          # (public.key is written by apt-repo-action and must stay.)
+          git rm -r -q --ignore-unmatch .github arch debian
+          git add .nojekyll "$GPG_KEY_FILENAME" index.html repo/index.html
           if ! git diff --cached --quiet; then
-            git commit -m "Update static assets on gh-pages [v${TAG}-${DEB_REV}]"
+            git commit -m "Update static assets on gh-pages [v${VERSION}]"
             git push origin gh-pages
           fi
-          git checkout main
-      - name: Prune old versions, tag release
+      - name: Tag upstream release
         run: |
-          # Expose the gh-pages branch at the path janitor.py expects without
-          # disturbing the main-branch working tree. The previous step already
-          # fetched gh-pages and switched back to main, so the local branch exists.
-          git worktree add gh-pages-branch gh-pages
-          python3 .github/scripts/janitor.py
-          # Push any eviction commit janitor made. If HEAD advanced past
-          # origin/gh-pages the janitor deleted something; otherwise skip.
-          if [ "$(git -C gh-pages-branch rev-parse HEAD)" \
-             != "$(git rev-parse origin/gh-pages)" ]; then
-            git -C gh-pages-branch push origin gh-pages
-          fi
-          git worktree remove gh-pages-branch
-
-          TAG=v${{ needs.check-version.outputs.tag }}
-          # During a force rebuild the tag already exists; skip re-tagging to
-          # avoid a fatal error. A force rebuild doesn't mean a new upstream
-          # release — the tag represents the upstream version, not the packaging.
-          if git rev-parse "$TAG" >/dev/null 2>&1; then
-            echo "Tag $TAG already exists (force rebuild of existing version), skipping."
+          # The tag records which upstream versions have shipped; it no longer
+          # gates builds (plan.py reads the published indexes instead).
+          if git ls-remote --exit-code --tags origin "refs/tags/v${TAG}" >/dev/null; then
+            echo "Tag v${TAG} already exists."
           else
-            git tag "$TAG"
-            git push origin "$TAG"
+            git tag "v${TAG}"
+            git push origin "v${TAG}"
           fi

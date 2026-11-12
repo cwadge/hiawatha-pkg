@@ -1,38 +1,48 @@
 #!/usr/bin/env python3
 """Generate GitHub Pages index files for the Hiawatha packaging repository.
 
-Called by the 'Publish static assets to gh-pages' step in distribution.yml.
-Writes /tmp/index.html and /tmp/repo-index.html, which the workflow then
-copies into the gh-pages branch after switching to it.
+Called by the finalize job in distribution.yml. Writes index.html and
+repo/index.html into <out_dir> (the gh-pages worktree). Distro rows and
+download links come from .github/targets.json.
 
-Usage: gen-pages.py <pages_url> <key_file> <tag> <deb_rev>
+Usage: gen-pages.py <pages_url> <key_file> <tag> <version> <out_dir>
 """
 
+import html
+import json
 import os
 import sys
 
+TARGETS_FILE = ".github/targets.json"
+
 
 def main():
-    if len(sys.argv) != 5:
-        print(f"Usage: {sys.argv[0]} <pages_url> <key_file> <tag> <deb_rev>",
+    if len(sys.argv) != 6:
+        print(f"Usage: {sys.argv[0]} <pages_url> <key_file> <tag> <version> <out_dir>",
               file=sys.stderr)
         sys.exit(1)
 
-    pages_url, key_file, tag, deb_rev = sys.argv[1:]
+    pages_url, key_file, tag, version, out_dir = sys.argv[1:]
 
-    full = {
-        "trixie":   f"{tag}-{deb_rev}~deb13u1",
-        "bookworm": f"{tag}-{deb_rev}~deb12u1",
-        "noble":    f"{tag}-{deb_rev}~24.04u1",
-        "jammy":    f"{tag}-{deb_rev}~22.04u1",
-    }
+    with open(TARGETS_FILE, encoding="utf-8") as fh:
+        cfg = json.load(fh)
+    arches = cfg["arches"]
     pool_base = f"{pages_url}/repo/pool/main/h/hiawatha"
     github_repo   = os.environ.get("GITHUB_REPOSITORY", "")
     upstream_path = os.environ.get("UPSTREAM_GITLAB_PATH", "hsleisink/hiawatha")
 
-    def dl(codename, arch):
-        href = f"{pool_base}/hiawatha_{full[codename]}_{arch}.deb"
-        return f'<a class="dl" href="{href}">{arch}</a>'
+    def dl(t, arch):
+        href = f"{pool_base}/hiawatha_{version}{t['suffix']}_{arch}.deb"
+        return f'<a class="dl" href="{html.escape(href)}">{arch}</a>'
+
+    rows = "\n".join(
+        f"""          <tr>
+            <td>{html.escape(t['label'])}</td><td><code>{t['codename']}</code></td>
+            <td>{' '.join(dl(t, a) for a in arches)}</td>
+          </tr>"""
+        for t in cfg["targets"]
+    )
+    arch_badge = " &middot; ".join(arches)
 
     index_html = f"""<!DOCTYPE html>
 <html lang="en">
@@ -76,48 +86,33 @@ def main():
   <header>
     <h1>Hiawatha Packages</h1>
     <p class="sub">Automated signed .deb packages, built daily from upstream GitLab releases.
-      &nbsp;<span class="badge">v{tag}</span><span class="badge">amd64 &middot; arm64</span></p>
+      &nbsp;<span class="badge">v{tag}</span><span class="badge">{arch_badge}</span></p>
   </header>
   <div class="wrap">
     <h2>Quick start</h2>
     <div class="card">
-<pre># Import the signing key
-curl -fsSL {pages_url}/{key_file} \\
-  | gpg --dearmor \\
-  | sudo tee /usr/share/keyrings/hiawatha.gpg &gt; /dev/null
+<pre># Import the signing key (apt reads the armored .asc directly; no gpg needed)
+sudo install -d -m 0755 /etc/apt/keyrings
+sudo curl -fsSLo /etc/apt/keyrings/hiawatha.asc {pages_url}/{key_file}
 
 # Add the repository
-echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/hiawatha.gpg] \\
-  {pages_url}/repo $(lsb_release -cs) main" \\
+. /etc/os-release
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/hiawatha.asc] \\
+  {pages_url}/repo $VERSION_CODENAME main" \\
   | sudo tee /etc/apt/sources.list.d/hiawatha.list
 
 # Install
 sudo apt update &amp;&amp; sudo apt install hiawatha</pre>
       <p class="note">The service is enabled and started automatically on installation.</p>
     </div>
-    <h2>Direct downloads &nbsp;<span style="text-transform:none;letter-spacing:0;font-weight:400">v{tag}-{deb_rev}</span></h2>
+    <h2>Direct downloads &nbsp;<span style="text-transform:none;letter-spacing:0;font-weight:400">v{version}</span></h2>
     <div class="card">
       <p class="note" style="margin-bottom:.75rem">For one-off installation without configuring the repository.
         After downloading: <code>sudo dpkg -i hiawatha_*.deb &amp;&amp; sudo apt-get install -f</code></p>
       <table>
         <thead><tr><th>Distribution</th><th>Codename</th><th>Downloads</th></tr></thead>
         <tbody>
-          <tr>
-            <td>Debian 13 (Stable)</td><td><code>trixie</code></td>
-            <td>{dl("trixie","amd64")} {dl("trixie","arm64")}</td>
-          </tr>
-          <tr>
-            <td>Debian 12</td><td><code>bookworm</code></td>
-            <td>{dl("bookworm","amd64")} {dl("bookworm","arm64")}</td>
-          </tr>
-          <tr>
-            <td>Ubuntu 24.04 LTS</td><td><code>noble</code></td>
-            <td>{dl("noble","amd64")} {dl("noble","arm64")}</td>
-          </tr>
-          <tr>
-            <td>Ubuntu 22.04 LTS</td><td><code>jammy</code></td>
-            <td>{dl("jammy","amd64")} {dl("jammy","arm64")}</td>
-          </tr>
+{rows}
         </tbody>
       </table>
     </div>
@@ -171,13 +166,13 @@ sudo apt update &amp;&amp; sudo apt install hiawatha</pre>
 </html>
 """
 
-    with open("/tmp/index.html", "w") as f:
+    os.makedirs(os.path.join(out_dir, "repo"), exist_ok=True)
+    with open(os.path.join(out_dir, "index.html"), "w", encoding="utf-8") as f:
         f.write(index_html)
-
-    with open("/tmp/repo-index.html", "w") as f:
+    with open(os.path.join(out_dir, "repo", "index.html"), "w", encoding="utf-8") as f:
         f.write(repo_index_html)
 
-    print(f"Generated index.html and repo-index.html for v{tag}-{deb_rev}")
+    print(f"Generated index.html and repo/index.html for v{version}")
 
 
 if __name__ == "__main__":

@@ -2,9 +2,9 @@ Source: hiawatha
 Section: httpd
 Priority: optional
 Maintainer: Chris Wadge <cwadge@tuxhelp.org>
-Build-Depends: debhelper-compat (= 13), cmake, libxml2-dev, libxslt1-dev, zlib1g-dev, libmbedtls-dev
+Build-Depends: debhelper-compat (= 13), cmake, libxml2-dev, libxslt1-dev, zlib1g-dev
 Standards-Version: 4.6.2
-Homepage: https://www.hiawatha-webserver.org/
+Homepage: https://hiawatha.leisink.net/
 
 Package: hiawatha
 Architecture: any

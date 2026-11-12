@@ -26,8 +26,6 @@ sudo apt update && sudo apt install hiawatha
 
 The service is enabled and started automatically on installation.
 
-Already set up with the older instructions (`/usr/share/keyrings/hiawatha.gpg`)? That keeps working; nothing to change.
-
 ## Supported Platforms
 
 | Distribution       | Codename | Architecture |

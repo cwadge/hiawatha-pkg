@@ -1,0 +1,18 @@
+Package: hiawatha
+Version: 12.4-1~26.04u1
+Architecture: amd64
+Maintainer: Chris Wadge <cwadge@tuxhelp.org>
+Installed-Size: 1805
+Depends: libc6 (>= 2.38), libcrypt1 (>= 1:4.1.0), libxml2-16 (>= 2.14.1), libxslt1.1 (>= 1.1.25), zlib1g (>= 1:1.2.3.4)
+Homepage: https://hiawatha.leisink.net/
+Priority: optional
+Section: httpd
+Filename: pool/main/h/hiawatha/hiawatha_12.4-1~26.04u1_amd64.deb
+Size: 516464
+SHA256: d3513dc4df33885e0b3a0a1bdf6548e12d2adfbfcd1b49ed73bc258ab8a9acc9
+SHA1: e4c5b6b946cfbd79aa99e568156ea9a8a463d7b3
+MD5sum: 94c56295417ff4dfb3d6ca3f1de5ceff
+Description: Advanced and secure webserver
+ Hiawatha is an open source webserver with security, ease of use
+ and lightweight design as its key features.
+

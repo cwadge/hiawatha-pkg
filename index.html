@@ -45,14 +45,14 @@
   <div class="wrap">
     <h2>Quick start</h2>
     <div class="card">
-<pre># Import the signing key
-curl -fsSL https://cwadge.github.io/hiawatha-pkg/hiawatha.asc \
-  | gpg --dearmor \
-  | sudo tee /usr/share/keyrings/hiawatha.gpg &gt; /dev/null
+<pre># Import the signing key (apt reads the armored .asc directly; no gpg needed)
+sudo install -d -m 0755 /etc/apt/keyrings
+sudo curl -fsSLo /etc/apt/keyrings/hiawatha.asc https://cwadge.github.io/hiawatha-pkg/hiawatha.asc
 
 # Add the repository
-echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/hiawatha.gpg] \
-  https://cwadge.github.io/hiawatha-pkg/repo $(lsb_release -cs) main" \
+. /etc/os-release
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/hiawatha.asc] \
+  https://cwadge.github.io/hiawatha-pkg/repo $VERSION_CODENAME main" \
   | sudo tee /etc/apt/sources.list.d/hiawatha.list
 
 # Install
@@ -71,8 +71,12 @@ sudo apt update &amp;&amp; sudo apt install hiawatha</pre>
             <td><a class="dl" href="https://cwadge.github.io/hiawatha-pkg/repo/pool/main/h/hiawatha/hiawatha_12.4-1~deb13u1_amd64.deb">amd64</a> <a class="dl" href="https://cwadge.github.io/hiawatha-pkg/repo/pool/main/h/hiawatha/hiawatha_12.4-1~deb13u1_arm64.deb">arm64</a></td>
           </tr>
           <tr>
-            <td>Debian 12</td><td><code>bookworm</code></td>
+            <td>Debian 12 (Oldstable)</td><td><code>bookworm</code></td>
             <td><a class="dl" href="https://cwadge.github.io/hiawatha-pkg/repo/pool/main/h/hiawatha/hiawatha_12.4-1~deb12u1_amd64.deb">amd64</a> <a class="dl" href="https://cwadge.github.io/hiawatha-pkg/repo/pool/main/h/hiawatha/hiawatha_12.4-1~deb12u1_arm64.deb">arm64</a></td>
+          </tr>
+          <tr>
+            <td>Ubuntu 26.04 LTS</td><td><code>resolute</code></td>
+            <td><a class="dl" href="https://cwadge.github.io/hiawatha-pkg/repo/pool/main/h/hiawatha/hiawatha_12.4-1~26.04u1_amd64.deb">amd64</a> <a class="dl" href="https://cwadge.github.io/hiawatha-pkg/repo/pool/main/h/hiawatha/hiawatha_12.4-1~26.04u1_arm64.deb">arm64</a></td>
           </tr>
           <tr>
             <td>Ubuntu 24.04 LTS</td><td><code>noble</code></td>
